@@ -1,7 +1,6 @@
-export interface Items {
+export interface item {
   id: number;
   name: string;
-  owner: number;
   quantity: number;
 }
 
@@ -14,8 +13,14 @@ export interface userData {
   user: string;
   items: [
     {
+      id: number;
       name: string;
       quantity: number;
     }
   ];
+}
+
+export interface foodByGroup {
+  foodgroup: string;
+  foods: string[];
 }

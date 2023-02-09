@@ -1,8 +1,11 @@
 import React from "react";
 import { Card } from "react-bootstrap";
+import { item } from "../utilities/interfaces";
+type itemProps = {
+  item: item;
+};
 
-const ShelfItem = ({ item }) => {
-  console.log(item);
+const ShelfItem = ({ item }: itemProps) => {
   return (
     <Card
       style={{

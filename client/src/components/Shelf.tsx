@@ -1,19 +1,12 @@
 import React from "react";
 import { Row } from "react-bootstrap";
 import ShelfItem from "./ShelfItem";
-const filter = "public/sliders2.svg";
-// import { userData } from "../utilities/interfaces";
-type userData = {
-  user: string;
-  items: [
-    {
-      name: string;
-      quantity: number;
-    }
-  ];
+const filter = "/sliders2.svg";
+import { userData } from "../utilities/interfaces";
+type shelfProps = {
+  shelf: userData;
 };
-const Shelf = ({ shelf }: userData) => {
-  console.log(shelf);
+const Shelf = ({ shelf }: shelfProps) => {
   return (
     <Row
       style={{
@@ -53,8 +46,8 @@ const Shelf = ({ shelf }: userData) => {
           />
         </div>
       </div>
-      {shelf.items.map((item) => {
-        return <ShelfItem item={item} />;
+      {shelf.items.map((item, i) => {
+        return <ShelfItem item={item} key={i} />;
       })}
     </Row>
   );

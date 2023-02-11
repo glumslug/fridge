@@ -6,7 +6,7 @@ import { userData } from "../utilities/interfaces";
 
 const Home = () => {
   const [shelves, setShelves] = useState<ReactNode[] | undefined>([]);
-
+  console.log("hi");
   useEffect(() => {
     const getUserData = async () => {
       const users = await axios.get("http://localhost:3000/db/userItems");

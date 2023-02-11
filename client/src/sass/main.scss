@@ -14,5 +14,46 @@
     opacity: 0.7;
   }
 }
+::-webkit-scrollbar {
+  width: 13px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(20, 19, 19, 0.42);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#302e2e6b, rgb(49, 46, 46), #302e2e6b);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(#302e2e6b, rgb(62, 58, 58), #302e2e6b);
+}
+.bright {
+  cursor: pointer;
+  border: #3e4041 1.5px solid;
+  transition: 0.3s;
+  &:hover {
+    border: #df5296 1.5px solid;
+  }
+}
+
+.item-bright {
+  cursor: pointer;
+  border: #6ba2d5 1.5px solid;
+  transition: 0.3s;
+  &:hover {
+    border: #df5296 1.5px solid;
+  }
+}
+
+.bright-active {
+  border: #df5296 1.5px solid;
+}
+
+.modal-active {
+  border-left: #df5296 1.5px solid;
+  border-right: #df5296 1.5px solid;
+  background: rgb(34, 34, 34);
+}
 
 @import "bootstrap/dist/css/bootstrap.min.css";

@@ -10,7 +10,7 @@ const Shelf = ({ shelf }: shelfProps) => {
   return (
     <Row
       style={{
-        height: "7rem",
+        minHeight: "7rem",
         border: "1.5px #AAAAAA solid",
         maxWidth: "40rem",
         background: "#141414",

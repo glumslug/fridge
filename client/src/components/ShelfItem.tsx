@@ -15,7 +15,7 @@ const ShelfItem = ({ item }: itemProps) => {
         gap: "10px",
         padding: "3px 8px",
       }}
-      className="shadow-lg h-33 d-flex flex-row justify-content-between align-items-center "
+      className="shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
     >
       <div>{item.name}</div>
       <div

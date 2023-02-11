@@ -16,7 +16,7 @@ const Navbar = () => {
   };
   return (
     <NavbarBs sticky="top" className="bg-black shadow-sm mb-3">
-      <Container className="">
+      <Container>
         {" "}
         <Button
           style={{ width: "3rem", height: "3rem", position: "relative" }}
@@ -37,8 +37,8 @@ const Navbar = () => {
           ) : (
             <svg
               fill="currentColor"
-              width="800px"
-              height="800px"
+              width="2rem"
+              height="2rem"
               viewBox="0 0 50 50"
               xmlns="http://www.w3.org/2000/svg"
             >

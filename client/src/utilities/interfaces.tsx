@@ -22,5 +22,6 @@ export interface userData {
 
 export interface foodByGroup {
   foodgroup: string;
+  quantity: number;
   foods: string[];
 }

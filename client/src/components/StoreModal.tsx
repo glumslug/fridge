@@ -10,7 +10,6 @@ type StoreModalProps = {
   handlePurchase: () => void;
   handleAmount: (type: string) => void;
   amount: number;
-  setAmount: React.Dispatch<React.SetStateAction<number>>;
 };
 const StoreModal = ({
   show,
@@ -20,7 +19,6 @@ const StoreModal = ({
   atHome,
   handleAmount,
   amount,
-  setAmount,
 }: StoreModalProps) => {
   return (
     <>

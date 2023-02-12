@@ -120,7 +120,6 @@ const Store = () => {
         atHome={atHome}
         handleAmount={handleAmount}
         amount={amount}
-        setAmount={setAmount}
       />
 
       <h1 className="text-white mt-5">The Store Opens Monsterously</h1>

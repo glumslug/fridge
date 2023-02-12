@@ -40,10 +40,22 @@
 .item-bright {
   cursor: pointer;
   border: #6ba2d5 1.5px solid;
-  transition: 0.3s;
+  transition: 0.2s;
   &:hover {
     border: #df5296 1.5px solid;
   }
+}
+
+.button-un {
+  all: unset;
+}
+
+.atHomeText {
+  color: #8bbff0;
+}
+
+.amount {
+  color: #8bf0e9;
 }
 
 .bright-active {

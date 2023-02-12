@@ -2,50 +2,60 @@ import axios from "axios";
 import React, { DOMElement, ReactElement, useEffect, useState } from "react";
 import { foodByGroup } from "../utilities/interfaces";
 import { Card, Row } from "react-bootstrap";
-import PopUp from "../components/PopUp";
+import StoreModal from "../components/StoreModal";
+import { useFridge } from "../context/FridgeContext";
 
 const Store = () => {
-  const user = 1;
-  const stockBox: HTMLElement | null = document.getElementById("stockBox");
+  const user = "Richard"; // Once i create a user context and a sign in this will be dynamically set
+  const { getStoreData, getUserData, purchaseItems } = useFridge();
   const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
+  const [atHome, setAtHome] = useState<number>(0);
+  const fullStock = getStoreData();
+  const fridgeItems = getUserData();
+  const [foodgroups, setFoodgroups] = useState<JSX.Element[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [selectedItem, setSelectedItem] = useState("");
+  const [stock, setStock] = useState<JSX.Element[]>([]);
+  const [amount, setAmount] = useState<number>(1);
+  const stockBox: HTMLElement | null = document.getElementById("stockBox");
+
+  //Modal functions
+  const handleClose = () => {
+    setAmount(1);
+    setShow(false);
+  };
+
+  const handleAmount = (action: string) => {
+    if (action === "less") {
+      if (amount != 0) {
+        setAmount(amount - 1);
+      }
+    } else {
+      setAmount(amount + 1);
+    }
+  };
   const handleShow = (food: string) => {
+    const userShelf = fridgeItems.find((shelf) => shelf.user == user);
+    let item = userShelf?.items.find((item) => item.name == food);
+    if (item) setAtHome(item?.quantity);
     setSelectedItem(food);
     setShow(true);
   };
   const handlePurchase = async () => {
     handleClose();
-    const add = await axios.post("http://localhost:3000/db/add-item", {
+    const result = await purchaseItems({
       name: selectedItem,
-      owner: user,
-      quantity: 1,
+      user: user,
+      atHome: atHome,
+      amount: amount,
     });
-    if (add.data) {
-      if (add.data.warningStatus == 0) {
-        alert("Successfully Added!");
-      } else {
-        alert("Something went wrong!");
-      }
+    if (result?.message) {
+      alert(result.message);
     }
   };
   const resetBox = () => {
     stockBox != null ? (stockBox.scrollTop = 0) : null;
   };
-  const [foodgroups, setFoodgroups] = useState<JSX.Element[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState("");
-  const [selectedItem, setSelectedItem] = useState("");
-  const [fullStock, setFullStock] = useState<foodByGroup[]>([]);
-  const [stock, setStock] = useState<JSX.Element[]>([]);
-  useEffect(() => {
-    const getFoodByGroup = async () => {
-      const foods = await axios.get("http://localhost:3000/db/food-by-group");
-      if (foods.data) {
-        const foodData: foodByGroup[] = foods.data;
-        setFullStock(foodData);
-      }
-    };
-    getFoodByGroup();
-  }, []);
 
   useEffect(() => {
     let rows: JSX.Element[] = [];
@@ -102,11 +112,15 @@ const Store = () => {
 
   return (
     <div>
-      <PopUp
+      <StoreModal
         show={show}
         handleClose={handleClose}
         selectedItem={selectedItem}
         handlePurchase={handlePurchase}
+        atHome={atHome}
+        handleAmount={handleAmount}
+        amount={amount}
+        setAmount={setAmount}
       />
 
       <h1 className="text-white mt-5">The Store Opens Monsterously</h1>

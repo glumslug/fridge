@@ -11,11 +11,12 @@ const ShelfItem = ({ item }: itemProps) => {
       style={{
         width: "auto",
         background: "black",
-        border: "#6ba2d5 1.5px solid",
+        // border: "#6ba2d5 1.5px solid",
         gap: "10px",
         padding: "3px 8px",
       }}
-      className="shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
+      onClick={() => console.log("hi")}
+      className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
     >
       <div>{item.name}</div>
       <div

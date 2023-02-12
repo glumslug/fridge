@@ -15,19 +15,21 @@ const Shelf = ({ shelf }: shelfProps) => {
         maxWidth: "40rem",
         background: "#141414",
         gap: "12px",
+        paddingTop: "1rem",
       }}
-      className="shadow-lg my-3 position-relative p-2 w-100 rounded align-items-end"
+      className="shadow-lg my-3 position-relative p-2 pt-5 w-100 rounded align-items-end"
       sm={5}
     >
       {/* Name and filter */}
       <div
         style={{
-          transform: "translate(-.4rem, -.6rem)",
+          transform: "translate(-.4rem, -0.4rem)",
           border: "1.5px #AAAAAA solid",
           background: "#1b1a1a",
           padding: "2px 6px",
           width: "auto",
           gap: "7px",
+          // zIndex: "10",
         }}
         className="position-absolute top-0 end-0 d-flex flex-row justify-content-between align-items-center"
       >

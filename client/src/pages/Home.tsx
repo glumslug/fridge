@@ -2,25 +2,24 @@ import axios from "axios";
 import React, { ReactNode, useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import Shelf from "../components/Shelf";
+import { useFridge } from "../context/FridgeContext";
 import { userData } from "../utilities/interfaces";
 
 const Home = () => {
+  const { getUserData } = useFridge();
+  const userData = getUserData();
+  // const [userData, setUserData] = useState<userData[]>([]);
   const [shelves, setShelves] = useState<ReactNode[] | undefined>([]);
-  console.log("hi");
+  useEffect(() => {}, []);
+
   useEffect(() => {
-    const getUserData = async () => {
-      const users = await axios.get("http://localhost:3000/db/userItems");
-      if (users.data) {
-        const userData: userData[] | undefined = users.data;
-        let rows: ReactNode[] = [];
-        userData?.map((shelf, i) => {
-          rows.push(<Shelf shelf={shelf} key={i} />);
-        });
-        setShelves(rows);
-      }
-    };
-    getUserData();
-  }, []);
+    console.log(userData);
+    let rows: ReactNode[] = [];
+    userData?.map((shelf, i) => {
+      rows.push(<Shelf shelf={shelf} key={i} />);
+    });
+    setShelves(rows);
+  }, [userData]);
 
   return (
     <div>

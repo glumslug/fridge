@@ -5,8 +5,9 @@ const filter = "/sliders2.svg";
 import { userData } from "../utilities/interfaces";
 type shelfProps = {
   shelf: userData;
+  handleShow: (arg0: string) => void;
 };
-const Shelf = ({ shelf }: shelfProps) => {
+const Shelf = ({ shelf, handleShow }: shelfProps) => {
   return (
     <Row
       style={{
@@ -45,11 +46,12 @@ const Shelf = ({ shelf }: shelfProps) => {
             }}
             src={filter}
             alt=""
+            onClick={() => alert("This feature is not live yet!")}
           />
         </div>
       </div>
       {shelf.items.map((item, i) => {
-        return <ShelfItem item={item} key={i} />;
+        return <ShelfItem item={item} key={i} handleShow={handleShow} />;
       })}
     </Row>
   );

@@ -14,7 +14,14 @@ type FridgeProviderProps = {
 
 type PurchaseProps = {
   name: string;
-  user: string;
+  user: number;
+  atHome: number;
+  amount: number;
+};
+
+type ManageProps = {
+  name: string;
+  user: number;
   atHome: number;
   amount: number;
 };
@@ -33,6 +40,12 @@ type FridgeContext = {
     amount,
   }: PurchaseProps) => Promise<Message | undefined>;
   fridgeItems: userData[];
+  manageItems: ({
+    name,
+    user,
+    atHome,
+    amount,
+  }: ManageProps) => Promise<Message | undefined>;
 };
 const FridgeContext = createContext({} as FridgeContext);
 
@@ -92,6 +105,25 @@ export function FridgeProvider({ children }: FridgeProviderProps) {
     }
   };
 
+  const manageItems = async ({ name, user, atHome, amount }: ManageProps) => {
+    const add = await axios.post(
+      `/db/${atHome + amount == 0 ? "delete-item" : "update-item-quantity"}`,
+      {
+        name: name,
+        owner: user,
+        quantity: amount,
+      }
+    );
+    if (add.data) {
+      if (add.data.warningStatus == 0) {
+        refreshFridgeContext();
+        return { message: "Successfully used/tossed!" };
+      } else {
+        return { message: "Something went wrong!" };
+      }
+    }
+  };
+
   function getUserData() {
     return fridgeItems;
   }
@@ -107,6 +139,7 @@ export function FridgeProvider({ children }: FridgeProviderProps) {
         getStoreData,
         purchaseItems,
         fridgeItems,
+        manageItems,
       }}
     >
       {children}

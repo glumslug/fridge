@@ -6,7 +6,7 @@ import StoreModal from "../components/StoreModal";
 import { useFridge } from "../context/FridgeContext";
 
 const Store = () => {
-  const user = "Richard"; // Once i create a user context and a sign in this will be dynamically set
+  const user = { name: "Richard", id: 1 }; // Once i create a user context and a sign in this will be dynamically set
   const { getStoreData, getUserData, purchaseItems } = useFridge();
   const [show, setShow] = useState(false);
   const [atHome, setAtHome] = useState<number>(0);
@@ -35,7 +35,7 @@ const Store = () => {
     }
   };
   const handleShow = (food: string) => {
-    const userShelf = fridgeItems.find((shelf) => shelf.user == user);
+    const userShelf = fridgeItems.find((shelf) => shelf.user == user.name);
     let item = userShelf?.items.find((item) => item.name == food);
     if (item) setAtHome(item?.quantity);
     setSelectedItem(food);
@@ -45,7 +45,7 @@ const Store = () => {
     handleClose();
     const result = await purchaseItems({
       name: selectedItem,
-      user: user,
+      user: user.id,
       atHome: atHome,
       amount: amount,
     });

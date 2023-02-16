@@ -37,10 +37,10 @@ app.get("/db/userItems", (req, res) => {
 });
 
 //Delete item
-app.delete("/db/delete-item/:user/:item", (req, res) => {
-  const { user, item } = req.params;
-  const sqlSelect: string = "DELETE FROM items WHERE owner = ? AND id = ?;";
-  db.query(sqlSelect, [user, item], (err, result) => {
+app.post("/db/delete-item", (req, res) => {
+  const { name, owner } = req.body;
+  const sqlSelect: string = "DELETE FROM items WHERE owner = ? AND name = ?;";
+  db.query(sqlSelect, [owner, name], (err, result) => {
     if (err) {
       res.send(err);
     } else {
@@ -67,7 +67,7 @@ app.post("/db/add-item", (req, res) => {
 app.post("/db/update-item-quantity", (req, res) => {
   const { name, owner, quantity } = req.body;
   const sqlInsert: string =
-    "UPDATE items JOIN users on users.id = items.owner SET quantity = quantity + ? WHERE users.name = ? AND items.name= ?;";
+    "UPDATE items SET quantity = quantity + ? WHERE owner = ? AND name= ?;";
   db.query(sqlInsert, [quantity, owner, name], (err, result) => {
     if (err) {
       res.send(err);

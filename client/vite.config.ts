@@ -20,6 +20,6 @@ export default defineConfig({
     host: true,
   },
   plugins: [react()],
-  build: { manifest: true, outDir: "../dist" },
+  build: { manifest: true, outDir: "./dist" },
   root: "./",
 });

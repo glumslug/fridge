@@ -3,16 +3,26 @@ import mysql2 from "mysql2";
 import bodyParser from "body-parser";
 import cors from "cors";
 import morgan from "morgan";
+import dotenv from "dotenv";
+dotenv.config();
 
 const port = 3000;
 
 const app = express();
-const db = mysql2.createPool({
-  host: "localhost",
-  user: "fridge",
-  password: "fridgeSQLuser",
-  database: "fridge",
-});
+const db =
+  process.env.NODE_ENV === "development"
+    ? mysql2.createPool({
+        host: "localhost",
+        user: "fridge",
+        password: "fridgeSQLuser",
+        database: "fridge",
+      })
+    : mysql2.createPool({
+        host: process.env.MYSQL_HOST,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+      });
 
 //Middleware
 app.use(cors());

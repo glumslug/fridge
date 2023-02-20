@@ -11,7 +11,7 @@ const Store = () => {
   const [show, setShow] = useState(false);
   const [atHome, setAtHome] = useState<number>(0);
   const fullStock = getStoreData();
-  const fridgeItems = getUserData();
+  const fridgeItems = getUserData()[0];
   const [foodgroups, setFoodgroups] = useState<JSX.Element[]>([]);
   const [selectedGroup, setSelectedGroup] = useState("");
   const [selectedItem, setSelectedItem] = useState("");
@@ -35,8 +35,7 @@ const Store = () => {
     }
   };
   const handleShow = (food: string) => {
-    const userShelf = fridgeItems.find((shelf) => shelf.user == user.name);
-    let item = userShelf?.items.find((item) => item.name == food);
+    let item = fridgeItems?.items.find((item) => item.name == food);
     if (item) setAtHome(item?.quantity);
     setSelectedItem(food);
     setShow(true);

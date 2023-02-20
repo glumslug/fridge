@@ -93,6 +93,7 @@ export function FridgeProvider({ children }: FridgeProviderProps) {
         name: name,
         owner: user,
         quantity: amount,
+        bin: "Fridge",
       }
     );
     if (add.data) {

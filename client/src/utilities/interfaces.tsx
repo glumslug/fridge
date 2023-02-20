@@ -1,6 +1,7 @@
 export interface item {
   id: number;
   name: string;
+  bin: string;
   quantity: number;
 }
 
@@ -10,11 +11,13 @@ export interface Users {
 }
 
 export interface userData {
-  user: string;
+  name: string;
+  id: number;
   items: [
     {
       id: number;
       name: string;
+      bin: string;
       quantity: number;
     }
   ];

@@ -4,14 +4,26 @@ import { Container } from "react-bootstrap";
 import FridgeModal from "../components/FridgeModal";
 import Shelf from "../components/Shelf";
 import { useFridge } from "../context/FridgeContext";
-import { userData } from "../utilities/interfaces";
+import { userData, item } from "../utilities/interfaces";
+
+type items = {
+  freezer: item[];
+  fridge: item[];
+  pantry: item[];
+  closet: item[];
+};
 
 const Home = () => {
   const user = { name: "Richard", id: 1 }; // Once i create a user context and a sign in this will be dynamically set
   const { getUserData, manageItems } = useFridge();
-  const userData = getUserData();
+  const userData: userData = getUserData()[0];
+  console.log(userData);
   // const [userData, setUserData] = useState<userData[]>([]);
-  const [shelves, setShelves] = useState<ReactNode[] | undefined>([]);
+  const [freezer, setFreezer] = useState<item[]>([]);
+  const [fridge, setFridge] = useState<item[]>([]);
+  const [pantry, setPantry] = useState<item[]>([]);
+  const [closet, setCloset] = useState<item[]>([]);
+  const [items, setItems] = useState<items>();
   const [amount, setAmount] = useState<number>(1);
   const [selectedItem, setSelectedItem] = useState("");
   const [show, setShow] = useState(false);
@@ -32,8 +44,7 @@ const Home = () => {
     }
   };
   const handleShow = (food: string) => {
-    const userShelf = userData.find((shelf) => shelf.user == user.name);
-    let item = userShelf?.items.find((item) => item.name == food);
+    let item = userData?.items.find((item) => item.name == food);
     if (item) setAtHome(item?.quantity);
     setSelectedItem(food);
     setShow(true);
@@ -52,12 +63,26 @@ const Home = () => {
   };
 
   useEffect(() => {
-    console.log(userData);
-    let rows: ReactNode[] = [];
-    userData?.map((shelf, i) => {
-      rows.push(<Shelf shelf={shelf} key={i} handleShow={handleShow} />);
+    let obj: items = { freezer: [], fridge: [], pantry: [], closet: [] };
+    userData?.items.map((item, i) => {
+      switch (item.bin) {
+        case "Freezer":
+          obj.freezer.push(item);
+          break;
+        case "Fridge":
+          obj.fridge.push(item);
+          break;
+        case "Pantry":
+          obj.pantry.push(item);
+          break;
+        case "Closet":
+          obj.closet.push(item);
+          break;
+        default:
+          break;
+      }
     });
-    setShelves(rows);
+    setItems(obj);
   }, [userData]);
 
   return (
@@ -74,7 +99,10 @@ const Home = () => {
       <h1 className="text-white mt-5">The Fridge Opens Ominously</h1>
 
       <Container className="d-flex flex-column align-items-sm-center align-items-md-start">
-        {shelves}
+        <Shelf bin="Freezer" items={items?.freezer} handleShow={handleShow} />
+        <Shelf bin="Fridge" items={items?.fridge} handleShow={handleShow} />
+        <Shelf bin="Pantry" items={items?.pantry} handleShow={handleShow} />
+        <Shelf bin="Closet" items={items?.closet} handleShow={handleShow} />
       </Container>
     </div>
   );

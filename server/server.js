@@ -7,7 +7,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const port = 3000;
-
 const app = express();
 const db =
   process.env.NODE_ENV === "development"
@@ -23,7 +22,7 @@ const db =
         password: process.env.MYSQL_PASSWORD,
         database: process.env.MYSQL_DATABASE,
       });
-
+console.log(db);
 //Middleware
 app.use(cors());
 app.use(morgan("combined"));
@@ -38,7 +37,7 @@ app.get("/", (req, res) => {
 //Get user Items
 app.get("/db/userItems", (req, res) => {
   const sqlSelect =
-    "SELECT users.name as user, users.id as id, JSON_ARRAYAGG(JSON_OBJECT('id', items.id, 'name', items.name, 'quantity', items.quantity)) AS 'items' from users JOIN items on users.id = items.owner GROUP BY users.id;";
+    "SELECT users.name as name, users.id as id, JSON_ARRAYAGG(JSON_OBJECT('id', items.id, 'bin', items.bin, 'name', items.name, 'quantity', items.quantity)) AS 'items' from users JOIN items on users.id = items.owner GROUP BY users.id HAVING users.id = 1;";
   db.query(sqlSelect, (err, result) => {
     if (err) {
       res.send(err);
@@ -63,9 +62,10 @@ app.post("/db/delete-item", (req, res) => {
 
 //Add Item
 app.post("/db/add-item", (req, res) => {
-  const { name, owner, quantity } = req.body;
-  const sqlInsert = "INSERT INTO items (name, owner, quantity) VALUES (?,?,?);";
-  db.query(sqlInsert, [name, owner, quantity], (err, result) => {
+  const { name, owner, quantity, bin } = req.body;
+  const sqlInsert =
+    "INSERT INTO items (name, owner, quantity, bin) VALUES (?,?,?,?);";
+  db.query(sqlInsert, [name, owner, quantity, bin], (err, result) => {
     if (err) {
       res.send(err);
     } else {
@@ -129,5 +129,5 @@ app.post("/db/food", (req, res) => {
 
 //Listener
 app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
+  console.log(`Listening on port ${port}, ${process.env.NODE_ENV}`);
 });

@@ -2,17 +2,25 @@ import React from "react";
 import { Row } from "react-bootstrap";
 import ShelfItem from "./ShelfItem";
 const filter = "/sliders2.svg";
-import { userData } from "../utilities/interfaces";
+import { item } from "../utilities/interfaces";
 type shelfProps = {
-  shelf: userData;
+  bin: string;
+  items: item[] | undefined;
   handleShow: (arg0: string) => void;
 };
-const Shelf = ({ shelf, handleShow }: shelfProps) => {
+const colors = {
+  Freezer: "#1D44D1",
+  Fridge: "#2F6EF7",
+  Pantry: "#214DEB",
+  Closet: "#2351F7",
+};
+const Shelf = ({ bin, items, handleShow }: shelfProps) => {
   return (
     <Row
       style={{
-        minHeight: "7rem",
+        minHeight: "3rem",
         border: "1.5px #AAAAAA solid",
+        // borderColor: "#3960E8",
         maxWidth: "40rem",
         background: "#141414",
         gap: "12px",
@@ -35,9 +43,9 @@ const Shelf = ({ shelf, handleShow }: shelfProps) => {
         className="position-absolute top-0 end-0 d-flex flex-row justify-content-between align-items-center"
       >
         {/* Name plaque */}
-        <div>{shelf.user}</div>
+        <div>{bin}</div>
         {/* Filter options */}
-        <div className="d-flex button-like">
+        {/* <div className="d-flex button-like">
           <img
             style={{
               width: "1.2rem",
@@ -48,9 +56,9 @@ const Shelf = ({ shelf, handleShow }: shelfProps) => {
             alt=""
             onClick={() => alert("This feature is not live yet!")}
           />
-        </div>
+        </div> */}
       </div>
-      {shelf.items.map((item, i) => {
+      {items?.map((item, i) => {
         return <ShelfItem item={item} key={i} handleShow={handleShow} />;
       })}
     </Row>

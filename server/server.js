@@ -4,6 +4,9 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import { protect } from "./authMiddleware.js";
 dotenv.config();
 
 const port = 3000;
@@ -37,7 +40,7 @@ app.get("/", (req, res) => {
 //Get user Items
 app.get("/db/userItems", (req, res) => {
   const sqlSelect =
-    "SELECT users.name as name, users.id as id, JSON_ARRAYAGG(JSON_OBJECT('id', items.id, 'bin', items.bin, 'name', items.name, 'quantity', items.quantity)) AS 'items' from users JOIN items on users.id = items.owner GROUP BY users.id HAVING users.id = 1;";
+    "SELECT u.name as name, u.id as id, JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity, 'product', i.product)) AS 'items' from users u JOIN items i on u.id = i.owner JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = 1;";
   db.query(sqlSelect, (err, result) => {
     if (err) {
       res.send(err);
@@ -47,11 +50,25 @@ app.get("/db/userItems", (req, res) => {
   });
 });
 
+//Get user Items
+app.get("/db/items", protect, (req, res) => {
+  const sqlSelect =
+    "SELECT u.name as name, u.id as id, JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity, 'product', i.product)) AS 'items' from users u JOIN items i on u.id = i.owner JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ?;";
+  db.query(sqlSelect, [req.user], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      console.log(req.user);
+      res.send(result[0]);
+    }
+  });
+});
+
 //Delete item
 app.post("/db/delete-item", (req, res) => {
-  const { name, owner } = req.body;
-  const sqlSelect = "DELETE FROM items WHERE owner = ? AND name = ?;";
-  db.query(sqlSelect, [owner, name], (err, result) => {
+  const { product, owner } = req.body;
+  const sqlSelect = "DELETE FROM items WHERE owner = ? AND product = ?;";
+  db.query(sqlSelect, [owner, product], (err, result) => {
     if (err) {
       res.send(err);
     } else {
@@ -62,10 +79,10 @@ app.post("/db/delete-item", (req, res) => {
 
 //Add Item
 app.post("/db/add-item", (req, res) => {
-  const { name, owner, quantity, bin } = req.body;
+  const { product, owner, quantity } = req.body;
   const sqlInsert =
-    "INSERT INTO items (name, owner, quantity, bin) VALUES (?,?,?,?);";
-  db.query(sqlInsert, [name, owner, quantity, bin], (err, result) => {
+    "INSERT INTO items (product, owner, quantity) VALUES (?,?,?);";
+  db.query(sqlInsert, [product, owner, quantity], (err, result) => {
     if (err) {
       res.send(err);
     } else {
@@ -76,10 +93,10 @@ app.post("/db/add-item", (req, res) => {
 
 //Update item quantity
 app.post("/db/update-item-quantity", (req, res) => {
-  const { name, owner, quantity } = req.body;
+  const { product, owner, quantity } = req.body;
   const sqlInsert =
-    "UPDATE items SET quantity = quantity + ? WHERE owner = ? AND name= ?;";
-  db.query(sqlInsert, [quantity, owner, name], (err, result) => {
+    "UPDATE items SET quantity = quantity + ? WHERE owner = ? AND product= ?;";
+  db.query(sqlInsert, [quantity, owner, product], (err, result) => {
     if (err) {
       res.send(err);
     } else {
@@ -126,6 +143,78 @@ app.post("/db/food", (req, res) => {
     }
   });
 });
+
+//Login a user
+app.post("/db/login", (req, res) => {
+  const { email, password } = req.body;
+  if (!email) {
+    res.send("Please type your email!");
+  }
+  if (!password) {
+    res.send("Please type your password!");
+  }
+
+  const sqlSelect = "SELECT * FROM users WHERE email = ?;";
+  db.query(sqlSelect, [email], async (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      const user = result[0];
+
+      if (!user) {
+        res.send("User doesn't exist!");
+      } else {
+        if (await bcrypt.compare(password, user.password)) {
+          res.send({
+            id: user.id,
+            name: user.name,
+            token: generateToken(user.id, "15m"),
+          });
+        } else {
+          res.send("Wrong password!");
+        }
+      }
+    }
+  });
+});
+
+// Register a user
+app.post("/db/register", async (req, res) => {
+  const { email, password, name } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const sqlInsert =
+    "INSERT INTO users (email, password, name) VALUES (?, ?, ?);";
+  db.query(sqlInsert, [email, hashedPassword, name], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      db.query(
+        "SELECT id, name FROM users WHERE email = ?",
+        [email],
+        (err, result) => {
+          if (err) {
+            res.send(err);
+          } else {
+            const user = result[0];
+            res.send({
+              id: user.id,
+              name: user.name,
+              token: generateToken(user.id, "15m"),
+            });
+          }
+        }
+      );
+    }
+  });
+});
+
+// Generate JWT
+const generateToken = (id, exp) => {
+  const period = exp ? exp : "30d";
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: period,
+  });
+};
 
 //Listener
 app.listen(port, () => {

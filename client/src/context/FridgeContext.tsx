@@ -13,14 +13,14 @@ type FridgeProviderProps = {
 };
 
 type PurchaseProps = {
-  name: string;
+  product: number;
   user: number;
   atHome: number;
   amount: number;
 };
 
 type ManageProps = {
-  name: string;
+  product: number;
   user: number;
   atHome: number;
   amount: number;
@@ -34,14 +34,14 @@ type FridgeContext = {
   getUserData: () => userData[];
   getStoreData: () => foodByGroup[];
   purchaseItems: ({
-    name,
+    product,
     user,
     atHome,
     amount,
   }: PurchaseProps) => Promise<Message | undefined>;
   fridgeItems: userData[];
   manageItems: ({
-    name,
+    product,
     user,
     atHome,
     amount,
@@ -82,7 +82,7 @@ export function FridgeProvider({ children }: FridgeProviderProps) {
   }, []);
 
   const purchaseItems = async ({
-    name,
+    product,
     user,
     atHome,
     amount,
@@ -90,10 +90,9 @@ export function FridgeProvider({ children }: FridgeProviderProps) {
     const add = await axios.post(
       `/db/${atHome === 0 ? "add-item" : "update-item-quantity"}`,
       {
-        name: name,
+        product: product,
         owner: user,
         quantity: amount,
-        bin: "Fridge",
       }
     );
     if (add.data) {
@@ -106,11 +105,16 @@ export function FridgeProvider({ children }: FridgeProviderProps) {
     }
   };
 
-  const manageItems = async ({ name, user, atHome, amount }: ManageProps) => {
+  const manageItems = async ({
+    product,
+    user,
+    atHome,
+    amount,
+  }: ManageProps) => {
     const add = await axios.post(
       `/db/${atHome + amount == 0 ? "delete-item" : "update-item-quantity"}`,
       {
-        name: name,
+        product: product,
         owner: user,
         quantity: amount,
       }

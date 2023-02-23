@@ -3,24 +3,20 @@ export interface item {
   name: string;
   bin: string;
   quantity: number;
+  product: number;
 }
 
-export interface Users {
+export interface user {
   id: number;
   name: string;
+  email: string;
+  password: string;
 }
 
 export interface userData {
   name: string;
   id: number;
-  items: [
-    {
-      id: number;
-      name: string;
-      bin: string;
-      quantity: number;
-    }
-  ];
+  items: item[];
 }
 
 export interface foodByGroup {

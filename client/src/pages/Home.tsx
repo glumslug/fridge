@@ -25,7 +25,7 @@ const Home = () => {
   const [closet, setCloset] = useState<item[]>([]);
   const [items, setItems] = useState<items>();
   const [amount, setAmount] = useState<number>(1);
-  const [selectedItem, setSelectedItem] = useState("");
+  const [selectedItem, setSelectedItem] = useState<item>();
   const [show, setShow] = useState(false);
   const [atHome, setAtHome] = useState<number>(0);
   //Modal functions
@@ -45,14 +45,20 @@ const Home = () => {
   };
   const handleShow = (food: string) => {
     let item = userData?.items.find((item) => item.name == food);
-    if (item) setAtHome(item?.quantity);
-    setSelectedItem(food);
-    setShow(true);
+    if (item) {
+      setAtHome(item?.quantity);
+      setSelectedItem(item);
+      setShow(true);
+    }
   };
   const handelManage = async () => {
+    if (!selectedItem) {
+      alert("Please select an item first!");
+      return;
+    }
     handleClose();
     const result = await manageItems({
-      name: selectedItem,
+      product: selectedItem.product,
       user: user.id,
       atHome: atHome,
       amount: -Math.abs(amount),
@@ -90,13 +96,13 @@ const Home = () => {
       <FridgeModal
         show={show}
         handleClose={handleClose}
-        selectedItem={selectedItem}
+        selectedItem={selectedItem?.name || "nothing"}
         handleManage={handelManage}
         atHome={atHome}
         handleAmount={handleAmount}
         amount={amount}
       />
-      <h1 className="text-white mt-5">The Fridge Opens Ominously</h1>
+      <h1 className="text-white mt-5">Home</h1>
 
       <Container className="d-flex flex-column align-items-sm-center align-items-md-start">
         <Shelf bin="Freezer" items={items?.freezer} handleShow={handleShow} />

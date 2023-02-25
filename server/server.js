@@ -162,6 +162,7 @@ app.post("/db/login", (req, res) => {
       const user = result[0];
 
       if (!user) {
+        res.status(400);
         res.send("User doesn't exist!");
       } else {
         if (await bcrypt.compare(password, user.password)) {
@@ -171,6 +172,7 @@ app.post("/db/login", (req, res) => {
             token: generateToken(user.id, "15m"),
           });
         } else {
+          res.status(400);
           res.send("Wrong password!");
         }
       }

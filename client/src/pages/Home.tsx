@@ -16,8 +16,8 @@ type items = {
 const Home = () => {
   const user = { name: "Richard", id: 1 }; // Once i create a user context and a sign in this will be dynamically set
   const { getUserData, manageItems } = useFridge();
-  const userData: userData = getUserData()[0];
-  console.log(userData);
+  const userData: userData = getUserData();
+
   // const [userData, setUserData] = useState<userData[]>([]);
   const [freezer, setFreezer] = useState<item[]>([]);
   const [fridge, setFridge] = useState<item[]>([]);
@@ -70,24 +70,26 @@ const Home = () => {
 
   useEffect(() => {
     let obj: items = { freezer: [], fridge: [], pantry: [], closet: [] };
-    userData?.items.map((item, i) => {
-      switch (item.bin) {
-        case "Freezer":
-          obj.freezer.push(item);
-          break;
-        case "Fridge":
-          obj.fridge.push(item);
-          break;
-        case "Pantry":
-          obj.pantry.push(item);
-          break;
-        case "Closet":
-          obj.closet.push(item);
-          break;
-        default:
-          break;
-      }
-    });
+    userData.items
+      ? userData?.items.map((item, i) => {
+          switch (item.bin) {
+            case "Freezer":
+              obj.freezer.push(item);
+              break;
+            case "Fridge":
+              obj.fridge.push(item);
+              break;
+            case "Pantry":
+              obj.pantry.push(item);
+              break;
+            case "Closet":
+              obj.closet.push(item);
+              break;
+            default:
+              break;
+          }
+        })
+      : null;
     setItems(obj);
   }, [userData]);
 

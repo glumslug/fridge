@@ -7,7 +7,12 @@ import {
   useState,
 } from "react";
 import { userData, foodByGroup } from "../utilities/interfaces";
-
+import { AuthContext } from "./AuthContext";
+type userObject = {
+  id: number;
+  name: string;
+  token: string;
+};
 type FridgeProviderProps = {
   children: ReactNode;
 };
@@ -32,7 +37,6 @@ type Message = {
 
 type FridgeContext = {
   getUserData: () => userData[];
-  getStoreData: () => foodByGroup[];
   purchaseItems: ({
     product,
     user,
@@ -55,30 +59,33 @@ export function useFridge() {
 
 export function FridgeProvider({ children }: FridgeProviderProps) {
   const [fridgeItems, setFridgeItems] = useState<userData[]>([]);
-  const [storeItems, setStoreItems] = useState<foodByGroup[]>([]);
+  const json = localStorage.getItem("user") || null;
+  const userObject: userObject | null = json ? JSON.parse(json) : null;
+  const token = userObject?.token;
   const refreshFridgeContext = () => {
     const openFridge = async () => {
-      const users = await axios.get("/db/userItems");
+      const users = await axios({
+        url: "/db/items/",
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       if (users.data) {
         const userData: userData[] = users.data;
         localStorage.setItem("fridge", JSON.stringify(userData));
         setFridgeItems(userData);
+        console.log(userData);
       }
     };
 
     openFridge();
   };
   useEffect(() => {
-    const openStore = async () => {
-      const stock = await axios.get("/db/food-by-group");
-      if (stock.data) {
-        const foodData: foodByGroup[] = stock.data;
-        localStorage.setItem("store", JSON.stringify(foodData));
-        setStoreItems(foodData);
-      }
-    };
-    openStore();
-    refreshFridgeContext();
+    if (token) {
+      refreshFridgeContext();
+    }
   }, []);
 
   const purchaseItems = async ({
@@ -133,15 +140,10 @@ export function FridgeProvider({ children }: FridgeProviderProps) {
     return fridgeItems;
   }
 
-  function getStoreData() {
-    return storeItems;
-  }
-
   return (
     <FridgeContext.Provider
       value={{
         getUserData,
-        getStoreData,
         purchaseItems,
         fridgeItems,
         manageItems,

@@ -56,6 +56,7 @@ app.get("/db/items", protect, (req, res) => {
     "SELECT u.name as name, u.id as id, JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity, 'product', i.product)) AS 'items' from users u JOIN items i on u.id = i.owner JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ?;";
   db.query(sqlSelect, [req.user], (err, result) => {
     if (err) {
+      res.status(400);
       res.send(err);
     } else {
       console.log(req.user);
@@ -154,7 +155,8 @@ app.post("/db/login", (req, res) => {
     res.send("Please type your password!");
   }
 
-  const sqlSelect = "SELECT * FROM users WHERE email = ?;";
+  const sqlSelect =
+    "SELECT u.name as name, u.id as id, u.email as email, u.password as password, JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity, 'product', i.product)) AS 'items' from users u JOIN items i on u.id = i.owner JOIN products p on p.id = i.product GROUP BY u.id HAVING u.email = ?;";
   db.query(sqlSelect, [email], async (err, result) => {
     if (err) {
       res.send(err);
@@ -169,11 +171,12 @@ app.post("/db/login", (req, res) => {
           res.send({
             id: user.id,
             name: user.name,
-            token: generateToken(user.id, "15m"),
+            items: user.items,
+            token: generateToken(user.id),
           });
         } else {
           res.status(400);
-          res.send("Wrong password!");
+          res.send("Email and password don't match!");
         }
       }
     }
@@ -201,7 +204,7 @@ app.post("/db/register", async (req, res) => {
             res.send({
               id: user.id,
               name: user.name,
-              token: generateToken(user.id, "15m"),
+              token: generateToken(user.id),
             });
           }
         }

@@ -1,18 +1,24 @@
 import { useContext, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 type formType = {
   email: string | null;
   password: string | null;
 };
 const Login = () => {
-  const { loginUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { userData, loginUser } = useAuth();
+  if (userData) {
+    navigate("/");
+  }
   const [form, setForm] = useState<formType>({ email: null, password: null });
   const setField = (field: string, value: string) => {
     setForm({ ...form, [field]: value });
   };
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     const { email, password } = form;
     if (!email) {
       alert("Please type an email!");
@@ -45,7 +51,7 @@ const Login = () => {
         />
       </Form.Group>
 
-      <Button variant="primary" type="button" onClick={() => handleSubmit()}>
+      <Button variant="primary" type="submit" onClick={(e) => handleSubmit(e)}>
         Submit
       </Button>
     </Form>

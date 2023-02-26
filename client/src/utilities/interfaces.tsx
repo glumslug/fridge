@@ -16,6 +16,7 @@ export interface user {
 export interface userData {
   name: string;
   id: number;
+  token: string;
   items: item[];
 }
 

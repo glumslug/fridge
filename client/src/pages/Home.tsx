@@ -3,8 +3,9 @@ import React, { ReactNode, useEffect, useState } from "react";
 import { Container } from "react-bootstrap";
 import FridgeModal from "../components/FridgeModal";
 import Shelf from "../components/Shelf";
-import { useFridge } from "../context/FridgeContext";
+import { useAuth } from "../context/AuthContext";
 import { userData, item } from "../utilities/interfaces";
+import { Navigate, useNavigate } from "react-router-dom";
 
 type items = {
   freezer: item[];
@@ -14,9 +15,11 @@ type items = {
 };
 
 const Home = () => {
-  const user = { name: "Richard", id: 1 }; // Once i create a user context and a sign in this will be dynamically set
-  const { getUserData, manageItems } = useFridge();
-  const userData: userData = getUserData();
+  const navigate = useNavigate();
+  const { userData, manageItems } = useAuth();
+  if (!userData) {
+    navigate("/");
+  }
 
   // const [userData, setUserData] = useState<userData[]>([]);
   const [freezer, setFreezer] = useState<item[]>([]);
@@ -59,7 +62,6 @@ const Home = () => {
     handleClose();
     const result = await manageItems({
       product: selectedItem.product,
-      user: user.id,
       atHome: atHome,
       amount: -Math.abs(amount),
     });
@@ -70,8 +72,8 @@ const Home = () => {
 
   useEffect(() => {
     let obj: items = { freezer: [], fridge: [], pantry: [], closet: [] };
-    userData.items
-      ? userData?.items.map((item, i) => {
+    userData?.items
+      ? userData.items.map((item, i) => {
           switch (item.bin) {
             case "Freezer":
               obj.freezer.push(item);
@@ -104,6 +106,7 @@ const Home = () => {
         handleAmount={handleAmount}
         amount={amount}
       />
+
       <h1 className="text-white mt-5">Home</h1>
 
       <Container className="d-flex flex-column align-items-sm-center align-items-md-start">

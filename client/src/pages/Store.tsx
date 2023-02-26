@@ -3,7 +3,6 @@ import React, { DOMElement, ReactElement, useEffect, useState } from "react";
 import { foodByGroup, item } from "../utilities/interfaces";
 import { Card, InputGroup, Row, Form } from "react-bootstrap";
 import StoreModal from "../components/StoreModal";
-import { useFridge } from "../context/FridgeContext";
 
 const Store = () => {
   return (

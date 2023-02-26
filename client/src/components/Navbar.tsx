@@ -94,8 +94,18 @@ const Navbar = () => {
         <Container>
           <div style={{ gap: "5px" }} className="d-flex justify-content-start">
             {" "}
-            <Button onClick={() => navigate("/login")}>Login</Button>
-            <Button onClick={() => navigate("/register")}>Register</Button>
+            <Button
+              variant="outline-primary"
+              onClick={() => navigate("/login")}
+            >
+              Login
+            </Button>
+            <Button
+              variant="outline-primary"
+              onClick={() => navigate("/register")}
+            >
+              Register
+            </Button>
           </div>
         </Container>
       )}

@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { MouseEvent, useContext, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
@@ -32,7 +32,7 @@ const Login = () => {
   };
 
   return (
-    <Form>
+    <Form style={{ maxWidth: "40rem" }}>
       <Form.Group className="mb-3" controlId="formBasicEmail">
         <Form.Label>Email address</Form.Label>
         <Form.Control
@@ -52,7 +52,7 @@ const Login = () => {
       </Form.Group>
 
       <Button variant="primary" type="submit" onClick={(e) => handleSubmit(e)}>
-        Submit
+        Login
       </Button>
     </Form>
   );

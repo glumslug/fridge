@@ -55,7 +55,7 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [userData, setUserData] = useState<userData | null>();
+  const [userData, setUserData] = useState<userData | null>(null);
   useEffect(() => {
     refreshData();
   }, []);
@@ -79,6 +79,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const data = localStorage.getItem("user");
     if (data) {
       setUserData(JSON.parse(data));
+    } else {
+      setUserData(null);
     }
   };
 

@@ -3,6 +3,7 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
 type formType = {
   email: string | null;
   password: string | null;
@@ -21,11 +22,11 @@ const Login = () => {
     e.preventDefault();
     const { email, password } = form;
     if (!email) {
-      alert("Please type an email!");
+      toast.error("Please type an email!");
       return;
     }
     if (!password) {
-      alert("Please type a password!");
+      toast.error("Please type a password!");
       return;
     }
     loginUser({ email, password });

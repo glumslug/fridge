@@ -9,6 +9,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoutes from "./utilities/ProtectedRoutes";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const { UserProtected, NoUser } = ProtectedRoutes;
 
 function App() {
@@ -29,6 +31,8 @@ function App() {
             <Route path="/recipes" element={<Recipes />} />
           </Route>
         </Routes>
+
+        <ToastContainer />
       </Container>
     </AuthProvider>
   );

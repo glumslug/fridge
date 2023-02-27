@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { toast } from "react-toastify";
 import {
   createContext,
   ReactNode,
@@ -57,9 +58,9 @@ export function useAuth() {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [userData, setUserData] = useState<userData | null>(null);
   useEffect(() => {
-    refreshData();
+    setUserData(JSON.parse(localStorage.getItem("user")));
   }, []);
-  const refreshData = async () => {
+  const refreshContext = async () => {
     const response = await axios({
       url: "/db/items/",
       method: "GET",
@@ -70,17 +71,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
     if (response.data) {
       const data: userData = response.data;
-      localStorage.setItem("fridge", JSON.stringify(data));
-      refreshContext();
-    }
-  };
-
-  const refreshContext = () => {
-    const data = localStorage.getItem("user");
-    if (data) {
-      setUserData(JSON.parse(data));
-    } else {
-      setUserData(null);
+      const newData = {
+        id: userData?.id,
+        name: userData?.name,
+        items: data.items,
+        token: userData?.token,
+      };
+      localStorage.setItem("user", JSON.stringify(newData));
+      setUserData(newData);
     }
   };
 
@@ -99,7 +97,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (axios.isAxiosError(error)) {
         // Access to config, request, and response
         console.log(error.response); // this is the main part. Use the response property from the error object
-        alert(error.response?.data);
+        toast.error(error.response?.data);
         return error.response as AxiosResponse;
       } else {
         // Just a stock error
@@ -135,8 +133,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
     if (add.data) {
       if (add.data.warningStatus == 0) {
-        refreshData();
-        return { message: "Successfully Added!" };
+        refreshContext();
       } else {
         return { message: "Something went wrong!" };
       }
@@ -152,10 +149,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         quantity: amount,
       }
     );
+    console.log(userData?.id, product);
     if (add.data) {
       if (add.data.warningStatus == 0) {
-        refreshData();
-        return { message: "Successfully used/tossed!" };
+        refreshContext();
       } else {
         return { message: "Something went wrong!" };
       }

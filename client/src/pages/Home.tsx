@@ -6,6 +6,7 @@ import Shelf from "../components/Shelf";
 import { useAuth } from "../context/AuthContext";
 import { userData, item } from "../utilities/interfaces";
 import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 type items = {
   freezer: item[];
@@ -56,7 +57,7 @@ const Home = () => {
   };
   const handelManage = async () => {
     if (!selectedItem) {
-      alert("Please select an item first!");
+      toast.error("Please select an item first!");
       return;
     }
     handleClose();
@@ -66,7 +67,7 @@ const Home = () => {
       amount: -Math.abs(amount),
     });
     if (result?.message) {
-      alert(result.message);
+      toast.success(result.message);
     }
   };
 

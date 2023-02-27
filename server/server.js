@@ -37,7 +37,7 @@ app.get("/", (req, res) => {
   res.send("The Fridge Opens Ominously");
 });
 
-//Get user Items
+//Get all Items
 app.get("/db/userItems", (req, res) => {
   const sqlSelect =
     "SELECT u.name as name, u.id as id, JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity, 'product', i.product)) AS 'items' from users u JOIN items i on u.id = i.owner JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = 1;";
@@ -53,7 +53,7 @@ app.get("/db/userItems", (req, res) => {
 //Get user Items
 app.get("/db/items", protect, (req, res) => {
   const sqlSelect =
-    "SELECT u.name as name, u.id as id, JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity, 'product', i.product)) AS 'items' from users u JOIN items i on u.id = i.owner JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ?;";
+    "SELECT u.name as name, u.id as id, JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity, 'product', i.product)) AS 'items' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ?;";
   db.query(sqlSelect, [req.user], (err, result) => {
     if (err) {
       res.status(400);
@@ -132,6 +132,19 @@ app.get("/db/food-by-group", (req, res) => {
   });
 });
 
+//Get all? products
+app.get("/db/products", (req, res) => {
+  const sqlSelect =
+    "SELECT foodgroup, COUNT(name) as quantity, json_arrayagg(name) as 'foods' FROM foods GROUP BY foodgroup ORDER BY quantity DESC;";
+  db.query(sqlSelect, (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 //Get items in foodgroup
 app.post("/db/food", (req, res) => {
   const { foodgroup } = req.body;
@@ -156,7 +169,7 @@ app.post("/db/login", (req, res) => {
   }
 
   const sqlSelect =
-    "SELECT u.name as name, u.id as id, u.email as email, u.password as password, JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity, 'product', i.product)) AS 'items' from users u JOIN items i on u.id = i.owner JOIN products p on p.id = i.product GROUP BY u.id HAVING u.email = ?;";
+    "SELECT u.name as name, u.id as id, u.email as email, u.password as password, JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity, 'product', i.product)) AS 'items' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.email = ?;";
   db.query(sqlSelect, [email], async (err, result) => {
     if (err) {
       res.send(err);

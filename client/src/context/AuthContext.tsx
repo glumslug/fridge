@@ -36,6 +36,7 @@ type AuthContext = {
     email,
     password,
   }: credentials) => Promise<void | Error | AxiosResponse>;
+  searchProducts: (search: string) => Promise<void | Error | AxiosResponse>;
   registerUser: ({ email, password, name }: credentials) => Promise<void>;
   logoutUser: () => void;
   purchaseItems: ({
@@ -133,6 +134,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
     if (add.data) {
       if (add.data.warningStatus == 0) {
+        toast.success("Purchased item(s)!");
         refreshContext();
       } else {
         return { message: "Something went wrong!" };
@@ -158,6 +160,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
   };
+
+  const searchProducts = async (search: string) => {
+    try {
+      const response = await axios.post("db/products", { search: search });
+
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Access to config, request, and response
+        console.log(error.response); // this is the main part. Use the response property from the error object
+        toast.error(error.response?.data);
+        return error.response as AxiosResponse;
+      } else {
+        // Just a stock error
+        return error as Error;
+      }
+    }
+  };
   return (
     <AuthContext.Provider
       value={{
@@ -168,6 +188,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         purchaseItems,
         manageItems,
         refreshContext,
+        searchProducts,
       }}
     >
       {children}

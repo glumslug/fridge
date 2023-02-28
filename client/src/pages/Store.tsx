@@ -1,10 +1,32 @@
 import axios from "axios";
 import React, { DOMElement, ReactElement, useEffect, useState } from "react";
 import { foodByGroup, item } from "../utilities/interfaces";
-import { Card, InputGroup, Row, Form } from "react-bootstrap";
+import {
+  Card,
+  InputGroup,
+  Row,
+  Form,
+  CardGroup,
+  Container,
+} from "react-bootstrap";
 import StoreModal from "../components/StoreModal";
+import { useAuth } from "../context/AuthContext";
 
 const Store = () => {
+  const { searchProducts, purchaseItems, userData } = useAuth();
+  const [searchResults, setSearchResults] = useState([]);
+  const handleSearch = async (e) => {
+    const results = await searchProducts(e.target.value);
+    console.log(results);
+    setSearchResults(results);
+  };
+  const handlePurchase = (product) => {
+    let atHome =
+      userData?.items.find((item) => item.product === product)?.quantity || 0;
+    console.log(atHome);
+    let amount = 1;
+    purchaseItems({ product, atHome, amount });
+  };
   return (
     <div>
       <h1 className="text-white mt-5">Shopping List</h1>
@@ -33,8 +55,30 @@ const Store = () => {
           <Form.Control
             aria-label="Default"
             aria-describedby="inputGroup-sizing-default"
+            onChange={(e) => handleSearch(e)}
           />
         </InputGroup>
+        <Container className="d-flex flex-column">
+          {searchResults.map((result) => {
+            return (
+              <CardGroup className="d-flex">
+                <Card
+                  style={{
+                    width: "auto",
+                    background: "black",
+                    // border: "#6ba2d5 1.5px solid",
+                    gap: "10px",
+                    padding: "3px 8px",
+                  }}
+                  onClick={() => handlePurchase(result.id)}
+                  className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
+                >
+                  {result.name}
+                </Card>
+              </CardGroup>
+            );
+          })}
+        </Container>
       </div>
     </div>
   );

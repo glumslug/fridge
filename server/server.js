@@ -226,6 +226,20 @@ app.post("/db/register", async (req, res) => {
   });
 });
 
+// search products
+app.post("/db/products", async (req, res) => {
+  const { search } = req.body;
+  const reg = "^" + search;
+  const sqlQuery = "SELECT * FROM products WHERE name REGEXP ?;";
+  db.query(sqlQuery, [reg], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 // Generate JWT
 const generateToken = (id, exp) => {
   const period = exp ? exp : "30d";

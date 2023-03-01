@@ -17,7 +17,7 @@ type credentials = {
 
 type CRUD = {
   product: number;
-  atHome: number;
+  atHome?: number;
   amount: number;
 };
 
@@ -44,6 +44,7 @@ type AuthContext = {
     atHome,
     amount,
   }: CRUD) => Promise<Message | undefined>;
+  upsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
   manageItems: ({
     product,
     atHome,
@@ -161,6 +162,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const upsertItem = async ({ product, amount }: CRUD) => {
+    const add = await axios.post(`/db/upsertItem`, {
+      product: product,
+      owner: userData?.id,
+      quantity: amount,
+    });
+    console.log(userData?.id, product);
+    if (add.data) {
+      toast.success("Purchased item(s)!");
+      refreshContext();
+    } else {
+      return { message: "Something went wrong!" };
+    }
+  };
+
   const searchProducts = async (search: string) => {
     try {
       const response = await axios.post("db/products", { search: search });
@@ -189,6 +205,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         manageItems,
         refreshContext,
         searchProducts,
+        upsertItem,
       }}
     >
       {children}

@@ -78,6 +78,19 @@ app.post("/db/delete-item", (req, res) => {
   });
 });
 
+//Upsert Item
+app.post("/db/upsertItem", (req, res) => {
+  const { product, owner, quantity } = req.body;
+  const sqlSelect = "CALL upsertItem(?,?,?);";
+  db.query(sqlSelect, [product, owner, quantity], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 //Add Item
 app.post("/db/add-item", (req, res) => {
   const { product, owner, quantity } = req.body;

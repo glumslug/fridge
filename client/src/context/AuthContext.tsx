@@ -135,7 +135,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
     if (add.data) {
       if (add.data.warningStatus == 0) {
-        toast.success("Purchased item(s)!");
         refreshContext();
       } else {
         return { message: "Something went wrong!" };
@@ -170,7 +169,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
     console.log(userData?.id, product);
     if (add.data) {
-      toast.success("Purchased item(s)!");
       refreshContext();
     } else {
       return { message: "Something went wrong!" };

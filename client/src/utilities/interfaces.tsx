@@ -25,3 +25,10 @@ export interface foodByGroup {
   quantity: number;
   foods: string[];
 }
+
+export interface shoppingList {
+  freezer: item[];
+  fridge: item[];
+  pantry: item[];
+  closet: item[];
+}

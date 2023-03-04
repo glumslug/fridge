@@ -68,4 +68,30 @@
   background: rgb(34, 34, 34);
 }
 
+.custom-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  border: #6ba2d5 1.5px solid;
+  height: 15px;
+  width: 15px;
+  :checked + label::after {
+    background-image: url("../../public/check.svg");
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+    background-position: center center;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-left: 0px;
+    left: 0px;
+    top: 0px;
+    text-align: center;
+    background-color: transparent;
+    font-size: 10px;
+    height: 22px;
+    width: 22px;
+  }
+}
+
 @import "bootstrap/dist/css/bootstrap.min.css";

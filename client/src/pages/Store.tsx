@@ -17,12 +17,7 @@ import { toast } from "react-toastify";
 const Store = () => {
   const { searchProducts, upsertItem, userData } = useAuth();
   const [searchResults, setSearchResults] = useState([]);
-  const [shoppingList, setShoppingList] = useState<shoppingList>({
-    freezer: [],
-    fridge: [],
-    pantry: [],
-    closet: [],
-  });
+  const shoppingList = userData?.cart;
   const [key, setKey] = useState("");
   const handleSearch = async (e) => {
     const str = e.target.value;

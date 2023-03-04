@@ -8,26 +8,12 @@ import { userData, item } from "../utilities/interfaces";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-type items = {
-  freezer: item[];
-  fridge: item[];
-  pantry: item[];
-  closet: item[];
-};
-
 const Home = () => {
   const navigate = useNavigate();
   const { userData, manageItems } = useAuth();
   if (!userData) {
     navigate("/");
   }
-
-  // const [userData, setUserData] = useState<userData[]>([]);
-  const [freezer, setFreezer] = useState<item[]>([]);
-  const [fridge, setFridge] = useState<item[]>([]);
-  const [pantry, setPantry] = useState<item[]>([]);
-  const [closet, setCloset] = useState<item[]>([]);
-  const [items, setItems] = useState<items>();
   const [amount, setAmount] = useState<number>(1);
   const [selectedItem, setSelectedItem] = useState<item>();
   const [show, setShow] = useState(false);
@@ -37,7 +23,6 @@ const Home = () => {
     setAmount(1);
     setShow(false);
   };
-
   const handleAmount = (action: string) => {
     if (action === "less") {
       if (amount != 0) {
@@ -47,13 +32,10 @@ const Home = () => {
       setAmount(amount + 1);
     }
   };
-  const handleShow = (food: string) => {
-    let item = userData?.items.find((item) => item.name == food);
-    if (item) {
-      setAtHome(item?.quantity);
-      setSelectedItem(item);
-      setShow(true);
-    }
+  const handleShow = (item: item) => {
+    setAtHome(item.quantity);
+    setSelectedItem(item);
+    setShow(true);
   };
   const handelManage = async () => {
     if (!selectedItem) {
@@ -61,6 +43,7 @@ const Home = () => {
       return;
     }
     handleClose();
+
     const result = await manageItems({
       product: selectedItem.product,
       atHome: atHome,
@@ -70,31 +53,6 @@ const Home = () => {
       toast.success(result.message);
     }
   };
-
-  useEffect(() => {
-    let obj: items = { freezer: [], fridge: [], pantry: [], closet: [] };
-    userData?.items
-      ? userData.items.map((item, i) => {
-          switch (item.bin) {
-            case "Freezer":
-              obj.freezer.push(item);
-              break;
-            case "Fridge":
-              obj.fridge.push(item);
-              break;
-            case "Pantry":
-              obj.pantry.push(item);
-              break;
-            case "Closet":
-              obj.closet.push(item);
-              break;
-            default:
-              break;
-          }
-        })
-      : null;
-    setItems(obj);
-  }, [userData]);
 
   return (
     <div>
@@ -111,10 +69,26 @@ const Home = () => {
       <h1 className="text-white mt-5">Home</h1>
 
       <Container className="d-flex flex-column align-items-sm-center align-items-md-start">
-        <Shelf bin="Freezer" items={items?.freezer} handleShow={handleShow} />
-        <Shelf bin="Fridge" items={items?.fridge} handleShow={handleShow} />
-        <Shelf bin="Pantry" items={items?.pantry} handleShow={handleShow} />
-        <Shelf bin="Closet" items={items?.closet} handleShow={handleShow} />
+        <Shelf
+          bin="Freezer"
+          items={userData?.items.freezer}
+          handleShow={handleShow}
+        />
+        <Shelf
+          bin="Fridge"
+          items={userData?.items.fridge}
+          handleShow={handleShow}
+        />
+        <Shelf
+          bin="Pantry"
+          items={userData?.items.pantry}
+          handleShow={handleShow}
+        />
+        <Shelf
+          bin="Closet"
+          items={userData?.items.closet}
+          handleShow={handleShow}
+        />
       </Container>
     </div>
   );

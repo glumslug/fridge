@@ -17,7 +17,8 @@ export interface userData {
   name: string;
   id: number;
   token: string;
-  items: item[];
+  items: items;
+  cart: shoppingList;
 }
 
 export interface foodByGroup {
@@ -26,9 +27,23 @@ export interface foodByGroup {
   foods: string[];
 }
 
-export interface shoppingList {
+export interface items {
   freezer: item[];
   fridge: item[];
   pantry: item[];
   closet: item[];
+}
+
+export interface shoppingList {
+  freezer: cart_item[];
+  fridge: cart_item[];
+  pantry: cart_item[];
+  closet: cart_item[];
+}
+
+export interface cart_item {
+  bin: string;
+  product: string;
+  product_id: number;
+  quantity: number;
 }

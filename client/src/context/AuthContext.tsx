@@ -7,7 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { userData, item } from "../utilities/interfaces";
+import { userData, item, cart_item, items } from "../utilities/interfaces";
 
 type credentials = {
   email: string;
@@ -64,7 +64,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
   const refreshContext = async () => {
     const response = await axios({
-      url: "/db/items/",
+      url: "/db/fullContext/",
       method: "GET",
       headers: {
         Authorization: `Bearer ${userData?.token}`,
@@ -72,11 +72,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       },
     });
     if (response.data) {
-      const data: userData = response.data;
+      const data: { items: items[]; cart: cart_item } = response.data;
       const newData = {
         id: userData?.id,
         name: userData?.name,
         items: data.items,
+        cart: data.cart,
         token: userData?.token,
       };
       localStorage.setItem("user", JSON.stringify(newData));
@@ -151,7 +152,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         quantity: amount,
       }
     );
-    console.log(userData?.id, product);
+    console.log(product);
     if (add.data) {
       if (add.data.warningStatus == 0) {
         refreshContext();

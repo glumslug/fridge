@@ -6,7 +6,7 @@ import { item } from "../utilities/interfaces";
 type shelfProps = {
   bin: string;
   items: item[] | undefined;
-  handleShow: (arg0: string) => void;
+  handleShow: (arg0: item) => void;
 };
 const colors = {
   Freezer: "#1D44D1",

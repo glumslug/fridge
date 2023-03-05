@@ -6,6 +6,14 @@ export interface item {
   product: number;
 }
 
+export interface searchItem {
+  id: number;
+  name: string;
+  bin: string;
+  aisle: string;
+  product: number;
+}
+
 export interface user {
   id: number;
   name: string;
@@ -21,6 +29,14 @@ export interface userData {
   cart: shoppingList;
 }
 
+export interface basketData {
+  items: basketItem[];
+}
+
+export interface basketItem {
+  product: number;
+  amount: number;
+}
 export interface foodByGroup {
   foodgroup: string;
   quantity: number;

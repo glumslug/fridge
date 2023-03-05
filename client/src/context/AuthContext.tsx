@@ -7,7 +7,14 @@ import {
   useEffect,
   useState,
 } from "react";
-import { userData, item, cart_item, items } from "../utilities/interfaces";
+import {
+  userData,
+  item,
+  cart_item,
+  items,
+  searchItem,
+  basketData,
+} from "../utilities/interfaces";
 
 type credentials = {
   email: string;
@@ -19,6 +26,7 @@ type CRUD = {
   product: number;
   atHome?: number;
   amount: number;
+  action?: string;
 };
 
 type AuthProviderProps = {
@@ -31,12 +39,15 @@ type Message = {
 
 type AuthContext = {
   userData: userData | null;
+  basketData: basketData | null;
   refreshContext: () => void;
   loginUser: ({
     email,
     password,
   }: credentials) => Promise<void | Error | AxiosResponse>;
-  searchProducts: (search: string) => Promise<void | Error | AxiosResponse>;
+  searchProducts: (
+    search: string
+  ) => Promise<searchItem[] | Error | AxiosResponse>;
   registerUser: ({ email, password, name }: credentials) => Promise<void>;
   logoutUser: () => void;
   purchaseItems: ({
@@ -44,6 +55,8 @@ type AuthContext = {
     atHome,
     amount,
   }: CRUD) => Promise<Message | undefined>;
+  addToCart: ({ product, amount }: CRUD) => Promise<Message | undefined>;
+  manageBasket: ({ product, amount, action }: CRUD) => void;
   upsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
   manageItems: ({
     product,
@@ -59,8 +72,11 @@ export function useAuth() {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [userData, setUserData] = useState<userData | null>(null);
+  const [basketData, setBasketData] = useState<basketData | null>(null);
+  //Get context from localstorage on page refresh
   useEffect(() => {
     setUserData(JSON.parse(localStorage.getItem("user")));
+    setBasketData(JSON.parse(localStorage.getItem("basket")));
   }, []);
   const refreshContext = async () => {
     const response = await axios({
@@ -120,8 +136,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logoutUser = () => {
-    console.log("logoout");
     localStorage.removeItem("user");
+    localStorage.removeItem("basket");
+    setBasketData(null);
     setUserData(null);
   };
 
@@ -162,6 +179,51 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const addToCart = async ({ product, amount }: CRUD) => {
+    const add = await axios({
+      url: "/db/cart/add",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${userData?.token}`,
+        "Content-Type": "application/json",
+      },
+      data: {
+        product: product,
+        quantity: amount,
+      },
+    });
+    if (add.data) {
+      if (add.data.warningStatus == 0) {
+        toast.success("Added to cart!");
+        refreshContext();
+      } else {
+        return { message: "Something went wrong!" };
+      }
+    }
+  };
+
+  const manageBasket = ({ product, amount, action }: CRUD) => {
+    const basket = JSON.parse(localStorage.getItem("basket")) || { items: [] };
+    let index = basket.items.findIndex((item) => item.product == product);
+
+    switch (action) {
+      case "add":
+        basket.items.push({ product, amount });
+        localStorage.setItem("basket", JSON.stringify(basket));
+        setBasketData(basket);
+        break;
+      case "remove":
+        basket.items.splice(index, 1);
+        localStorage.setItem("basket", JSON.stringify(basket));
+        setBasketData(basket);
+      case "update":
+        basket.items[index].amount = amount;
+        localStorage.setItem("basket", JSON.stringify(basket));
+      default:
+        break;
+    }
+  };
+
   const upsertItem = async ({ product, amount }: CRUD) => {
     const add = await axios.post(`/db/upsertItem`, {
       product: product,
@@ -180,7 +242,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await axios.post("db/products", { search: search });
 
-      return response.data;
+      return response.data as searchItem[];
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // Access to config, request, and response
@@ -197,10 +259,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     <AuthContext.Provider
       value={{
         userData,
+        basketData,
         loginUser,
         registerUser,
         logoutUser,
         purchaseItems,
+        addToCart,
+        manageBasket,
         manageItems,
         refreshContext,
         searchProducts,

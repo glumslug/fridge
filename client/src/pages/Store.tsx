@@ -1,6 +1,11 @@
 import axios from "axios";
 import React, { DOMElement, ReactElement, useEffect, useState } from "react";
-import { foodByGroup, item, shoppingList } from "../utilities/interfaces";
+import {
+  foodByGroup,
+  item,
+  searchItem,
+  shoppingList,
+} from "../utilities/interfaces";
 import {
   Card,
   InputGroup,
@@ -15,10 +20,23 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
 const Store = () => {
-  const { searchProducts, upsertItem, userData } = useAuth();
-  const [searchResults, setSearchResults] = useState([]);
+  const {
+    searchProducts,
+    upsertItem,
+    userData,
+    addToCart,
+    basketData,
+    manageBasket,
+  } = useAuth();
+  const [searchResults, setSearchResults] = useState<searchItem[]>([]);
+  const [isChecked, setIsChecked] = useState<number[]>([]);
   const shoppingList = userData?.cart;
   const [key, setKey] = useState("");
+
+  const handleCheck = (item: item, checked: boolean) => {
+    let action = checked ? "add" : "remove";
+    manageBasket({ product: item.product, amount: 2, action: action });
+  };
   const handleSearch = async (e) => {
     const str = e.target.value;
     const len = str.split("").length;
@@ -29,20 +47,24 @@ const Store = () => {
     ) {
       setSearchResults([]);
     } else {
-      const results = await searchProducts(str);
+      const results: searchItem[] = await searchProducts(str);
       setSearchResults(results);
     }
   };
 
-  const handleAdd = (result) => {
-    let bin: string = result.bin.toLowerCase();
-    let newList = [...shoppingList[bin], result];
-    setShoppingList({ ...shoppingList, [bin]: newList });
+  useEffect(() => {
+    let arr: number[] = [];
+    basketData?.items.map((item) => {
+      arr.push(item.product);
+    });
+    setIsChecked(arr);
+  }, [basketData]);
+
+  const handleAdd = (result: searchItem) => {
+    let amount: number = 1;
+    addToCart({ product: result.id, amount: amount });
   };
   const handlePurchase = () => {
-    // let atHome =
-    //   userData?.items.find((item) => item.product === product)?.quantity || 0;
-    // console.log(atHome);
     let total = 0;
     Object.keys(shoppingList).map((bin) => {
       shoppingList[bin].map((item) => {
@@ -72,34 +94,39 @@ const Store = () => {
             background: "#141414",
             gap: "12px",
           }}
-          className="shadow-lg my-3 mx-1 position-relative p-2 w-100 rounded d-flex flex-column align-items-start "
+          className="shadow-lg mt-3 mx-1 position-relative p-2 w-100 rounded d-flex flex-column align-items-start "
           sm={5}
         >
-          {Object.keys(shoppingList).map((bin) => {
+          {Object.keys(shoppingList).map((bin, i) => {
             return (
-              <>
+              <div key={bin} className="w-100">
                 {shoppingList[bin].length > 0 && (
-                  <div style={{ borderBottom: "2px solid #A1D3FF" }}>
+                  <div
+                    style={{
+                      borderBottom: "2px solid #A1D3FF",
+                      marginBottom: "5px",
+                    }}
+                  >
                     {bin.charAt(0).toUpperCase() + bin.slice(1)}
                   </div>
                 )}
                 <div className="row w-100">
-                  {shoppingList[bin].map((item) => {
+                  {shoppingList[bin].map((item, i: number) => {
                     return (
                       <div
                         className="col-md-4 col-6 d-flex align-items-center"
                         style={{ gap: "10px", marginBottom: "5px" }}
+                        key={`${bin}${i}`}
                       >
                         <input
                           type="checkbox"
-                          id={item.name}
-                          // className="custom-checkbox"
+                          checked={isChecked.includes(item.product)}
+                          onChange={(e) => handleCheck(item, e.target.checked)}
                         />
                         <Card
                           style={{
                             width: "8rem",
                             background: "black",
-
                             gap: "10px",
                             padding: "3px 8px",
                           }}
@@ -111,11 +138,30 @@ const Store = () => {
                     );
                   })}
                 </div>
-              </>
+              </div>
             );
           })}
         </Row>
-        <Button onClick={handlePurchase}>Checkout</Button>
+        <Row
+          style={{
+            width: "40rem",
+          }}
+          className="mx-1 d-flex justify-content-end"
+        >
+          <Button
+            variant="outline-dark"
+            className="my-1"
+            style={{
+              width: "auto",
+              border: "2px solid #705151",
+              color: "white",
+            }}
+            onClick={handlePurchase}
+          >
+            Checkout
+          </Button>
+        </Row>
+        {/* Product search */}
         <InputGroup className="mb-3">
           <Form.Control
             aria-label="Default"

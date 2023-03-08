@@ -33,6 +33,7 @@ const Store = () => {
   } = useAuth();
   const [searchResults, setSearchResults] = useState<searchItem[]>([]);
   const [isChecked, setIsChecked] = useState<number[]>([]);
+  const [searchValue, setSearchValue] = useState<string | null>(null);
   const shoppingList = userData?.cart;
   const homeList = userData?.items;
   const [key, setKey] = useState("");
@@ -58,7 +59,7 @@ const Store = () => {
     setSelectedItem(cart_item);
     setAtHome(
       homeList[cart_item.bin].find(
-        (home_item: item_generic) => (home_item.product = cart_item.product)
+        (home_item: item_generic) => home_item.product == cart_item.product
       ).quantity || 0
     );
 
@@ -88,6 +89,7 @@ const Store = () => {
   };
   const handleSearch = async (e) => {
     const str = e.target.value;
+    setSearchValue(str);
     const len = str.split("").length;
     if (
       !str ||
@@ -110,6 +112,18 @@ const Store = () => {
   }, [basketData]);
 
   const handleAdd = (result: searchItem) => {
+    setSearchResults([]);
+    setSearchValue("");
+    const exists =
+      shoppingList[result.bin].find(
+        (item: cart_item) => result.id == item.product
+      ) || false;
+    if (exists) {
+      toast.error(
+        "Item already in cart! Adjust quantity by tapping cart-item."
+      );
+      return;
+    }
     let amount: number = 1;
     addToCart({ product: result.id, amount: amount });
   };
@@ -122,8 +136,7 @@ const Store = () => {
         total += 1;
         upsertItem({ product: item.product, amount: item.amount });
       })
-    )
-    .then(() => toast.success(`Purchased ${total} items!`));
+    ).then(() => toast.success(`Purchased ${total} items!`));
   };
 
   return (
@@ -241,6 +254,7 @@ const Store = () => {
             placeholder="Search to add items..."
             onKeyDown={(e) => setKey(e.key)}
             onChange={(e) => handleSearch(e)}
+            value={searchValue}
           />
         </InputGroup>
         <Container

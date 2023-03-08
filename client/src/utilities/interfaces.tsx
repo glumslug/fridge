@@ -19,7 +19,6 @@ export interface searchItem {
   name: string;
   bin: string;
   aisle: string;
-  product: number;
 }
 
 export interface user {

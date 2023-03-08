@@ -98,6 +98,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       };
       localStorage.setItem("user", JSON.stringify(newData));
       setUserData(newData);
+      localStorage.removeItem("basket");
+      setBasketData(null);
+      console.log("refreshed");
     }
   };
 

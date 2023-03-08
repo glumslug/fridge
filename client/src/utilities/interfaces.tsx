@@ -6,6 +6,14 @@ export interface item {
   product: number;
 }
 
+export interface item_generic {
+  id: number;
+  name: string;
+  bin: string;
+  quantity: number;
+  product: number;
+}
+
 export interface searchItem {
   id: number;
   name: string;
@@ -59,7 +67,7 @@ export interface shoppingList {
 
 export interface cart_item {
   bin: string;
-  product: string;
-  product_id: number;
+  name: string;
+  product: number;
   quantity: number;
 }

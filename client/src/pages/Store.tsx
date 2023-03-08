@@ -1,8 +1,10 @@
 import axios from "axios";
 import React, { DOMElement, ReactElement, useEffect, useState } from "react";
 import {
+  basketItem,
+  cart_item,
   foodByGroup,
-  item,
+  item_generic,
   searchItem,
   shoppingList,
 } from "../utilities/interfaces";
@@ -27,15 +29,62 @@ const Store = () => {
     addToCart,
     basketData,
     manageBasket,
+    refreshContext,
   } = useAuth();
   const [searchResults, setSearchResults] = useState<searchItem[]>([]);
   const [isChecked, setIsChecked] = useState<number[]>([]);
   const shoppingList = userData?.cart;
+  const homeList = userData?.items;
   const [key, setKey] = useState("");
+  const [amount, setAmount] = useState<number>(1);
+  const [selectedItem, setSelectedItem] = useState<cart_item>();
+  const [show, setShow] = useState(false);
+  const [atHome, setAtHome] = useState<number>(0);
+  //Modal functions
+  const handleClose = () => {
+    setAmount(1);
+    setShow(false);
+  };
+  const handleAmount = (action: string) => {
+    if (action === "less") {
+      if (amount != 0) {
+        setAmount(amount - 1);
+      }
+    } else {
+      setAmount(amount + 1);
+    }
+  };
+  const handleShow = (cart_item: cart_item) => {
+    setSelectedItem(cart_item);
+    setAtHome(
+      homeList[cart_item.bin].find(
+        (home_item: item_generic) => (home_item.product = cart_item.product)
+      ).quantity || 0
+    );
 
-  const handleCheck = (item: item, checked: boolean) => {
+    setShow(true);
+  };
+  const handleManage = async () => {
+    if (!selectedItem) {
+      toast.error("Please select an item first!");
+      return;
+    }
+    handleClose();
+
+    const result = await manageBasket({
+      product: selectedItem.product_id,
+      amount: -Math.abs(amount),
+      action: selectedItem.quantity - amount > 0 ? "update" : "remove",
+    });
+  };
+
+  const handleCheck = (item: cart_item, checked: boolean) => {
     let action = checked ? "add" : "remove";
-    manageBasket({ product: item.product, amount: 2, action: action });
+    manageBasket({
+      product: item.product,
+      amount: item.quantity,
+      action: action,
+    });
   };
   const handleSearch = async (e) => {
     const str = e.target.value;
@@ -64,20 +113,30 @@ const Store = () => {
     let amount: number = 1;
     addToCart({ product: result.id, amount: amount });
   };
-  const handlePurchase = () => {
+  const handlePurchase = async () => {
     let total = 0;
-    Object.keys(shoppingList).map((bin) => {
-      shoppingList[bin].map((item) => {
-        let amount = 1;
+    const basket = JSON.parse(localStorage.getItem("basket"));
+    console.log(basket);
+    Promise.all(
+      basket.items.map((item: basketItem) => {
         total += 1;
-        upsertItem({ product: item.id, amount: amount });
-      });
-    });
-    toast.success(`Purchased ${total} items!`);
+        upsertItem({ product: item.product, amount: item.amount });
+      })
+    )
+    .then(() => toast.success(`Purchased ${total} items!`));
   };
 
   return (
     <div>
+      <StoreModal
+        show={show}
+        handleClose={handleClose}
+        selectedItem={selectedItem}
+        handleManage={handleManage}
+        atHome={atHome}
+        handleAmount={handleAmount}
+        amount={amount}
+      />
       <h1 className="text-white mt-5">Shopping List</h1>
       <div
         style={{ gap: "4px", maxWidth: "40rem" }}
@@ -100,6 +159,7 @@ const Store = () => {
           {Object.keys(shoppingList).map((bin, i) => {
             return (
               <div key={bin} className="w-100">
+                {/* Bin title */}
                 {shoppingList[bin].length > 0 && (
                   <div
                     style={{
@@ -110,8 +170,9 @@ const Store = () => {
                     {bin.charAt(0).toUpperCase() + bin.slice(1)}
                   </div>
                 )}
+                {/* Bin items */}
                 <div className="row w-100">
-                  {shoppingList[bin].map((item, i: number) => {
+                  {shoppingList[bin].map((item: cart_item, i: number) => {
                     return (
                       <div
                         className="col-md-4 col-6 d-flex align-items-center"
@@ -130,9 +191,19 @@ const Store = () => {
                             gap: "10px",
                             padding: "3px 8px",
                           }}
-                          className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center flex-nowrap text-truncate"
+                          className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center flex-nowrap "
+                          onClick={() => handleShow(item)}
                         >
-                          {item.name}
+                          <div className="text-truncate">{item.name}</div>
+                          <div
+                            style={{
+                              minWidth: "1.5rem",
+                              background: "#AB6969",
+                            }}
+                            className="text-center rounded"
+                          >
+                            {item.quantity}
+                          </div>
                         </Card>
                       </div>
                     );

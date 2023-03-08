@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import { cart_item, item, item_generic } from "../utilities/interfaces";
 
 type StoreModalProps = {
   show: boolean;
-  selectedItem: string;
+  selectedItem: cart_item | undefined;
   atHome: number;
   handleClose: () => void;
-  handlePurchase: () => void;
+  handleManage: () => void;
   handleAmount: (type: string) => void;
   amount: number;
 };
@@ -15,11 +16,12 @@ const StoreModal = ({
   show,
   handleClose,
   selectedItem,
-  handlePurchase,
+  handleManage,
   atHome,
   handleAmount,
   amount,
 }: StoreModalProps) => {
+  // console.log(selectedItem);
   return (
     <>
       <Modal show={show} onHide={handleClose} centered>
@@ -34,7 +36,7 @@ const StoreModal = ({
           {" "}
           <div className="d-flex flex-row">
             {" "}
-            Purchase{" "}
+            In cart:{" "}
             <button
               className="button-un mx-2"
               onClick={() => handleAmount("less")}
@@ -48,20 +50,19 @@ const StoreModal = ({
             >
               &#10095;
             </button>{" "}
-            {selectedItem}?{" "}
+            {selectedItem?.name}?{" "}
           </div>
-          <span className="atHomeText">In Fridge: {atHome}</span>
+          <span className="atHomeText">At home: {atHome}</span>
         </Modal.Body>
         <Modal.Footer
           className="bg-black bright-active"
           style={{ borderTop: "none" }}
         >
           <Button variant="secondary" onClick={handleClose}>
-            No
+            Cancel
           </Button>
-          <Button variant="primary" onClick={handlePurchase}>
-            Yes
-          </Button>
+          <Button variant="primary">Adjust</Button>
+          <Button variant="danger">Remove</Button>
         </Modal.Footer>
       </Modal>
     </>

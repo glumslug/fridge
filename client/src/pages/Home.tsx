@@ -68,7 +68,7 @@ const Home = () => {
 
       <h1 className="text-white mt-5">Home</h1>
 
-      <Container className="d-flex flex-column align-items-sm-center align-items-md-start">
+      <Container className="mx-2 p-2 d-flex flex-column align-items-sm-center align-items-md-start">
         <Shelf
           bin="Freezer"
           items={userData?.items.freezer}

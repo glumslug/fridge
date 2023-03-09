@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { cart_item, item, item_generic } from "../utilities/interfaces";
@@ -21,7 +21,11 @@ const StoreModal = ({
   handleAmount,
   amount,
 }: StoreModalProps) => {
-  // console.log(selectedItem);
+  const [initial, setInitial] = useState<number>(amount);
+  useEffect(() => {
+    console.log(amount, initial);
+  }, [amount]);
+
   return (
     <>
       <Modal show={show} onHide={handleClose} centered>
@@ -30,7 +34,7 @@ const StoreModal = ({
           className="bg-black bright-active"
           style={{ borderBottom: "none" }}
         >
-          <Modal.Title>{selectedItem?.name}</Modal.Title>
+          <Modal.Title>{selectedItem?.name + ", " + initial}</Modal.Title>
         </Modal.Header>
         <Modal.Body className=" modal-active d-flex flex-column">
           {" "}
@@ -38,9 +42,10 @@ const StoreModal = ({
             {" "}
             Adjust amount:{" "}
             <button
-              // disabled={amount > 0 ? false : true}
+              disabled={amount > 0 ? false : true}
               className="button-un mx-2 amount-btn"
               onClick={() => handleAmount("less")}
+              style={{ opacity: `${amount > 0 ? 1 : 0.2}` }}
             >
               &#10094;
             </button>{" "}
@@ -63,6 +68,7 @@ const StoreModal = ({
           </Button>
           <Button
             variant="primary"
+            disabled={amount === initial ? true : false}
             onClick={() => handleManageBasket("update")}
           >
             Adjust

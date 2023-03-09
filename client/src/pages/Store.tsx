@@ -33,7 +33,7 @@ const Store = () => {
   } = useAuth();
   const [searchResults, setSearchResults] = useState<searchItem[]>([]);
   const [isChecked, setIsChecked] = useState<number[]>([]);
-  const [searchValue, setSearchValue] = useState<string | null>("");
+  const [searchValue, setSearchValue] = useState<string>("");
   const shoppingList = userData?.cart;
   const homeList = userData?.items;
   const [key, setKey] = useState("");
@@ -245,35 +245,42 @@ const Store = () => {
         </Row>
         <Row
           style={{
+            maxWidth: "40rem",
             width: "40rem",
+            gap: "5px",
           }}
-          className="mx-1 d-flex justify-content-end"
+          className="mx-1 d-flex justify-content-between flex-nowrap"
         >
+          {/* Product search */}
+          <InputGroup className="p-0" style={{ flexShrink: "1" }}>
+            <Form.Control
+              aria-label="Default"
+              aria-describedby="inputGroup-sizing-default"
+              className="py-0 bg-transparent border-1 border-black rounded text-white"
+              placeholder="Search to add items..."
+              onKeyDown={(e) => setKey(e.key)}
+              onChange={(e) => handleSearch(e)}
+              style={{ border: "2px solid #5b5b5b" }}
+              value={searchValue}
+            />
+          </InputGroup>
           <Button
             variant="outline-dark"
-            className="my-1"
             style={{
               width: "auto",
               border: "2px solid #705151",
               color: "white",
+              flexShrink: "1",
             }}
-            onClick={handlePurchase}
+            onClick={() =>
+              isChecked.length > 0
+                ? handlePurchase()
+                : toast.error("No items checked off!")
+            }
           >
             Checkout
           </Button>
         </Row>
-        {/* Product search */}
-        <InputGroup className="mb-3">
-          <Form.Control
-            aria-label="Default"
-            aria-describedby="inputGroup-sizing-default"
-            className="bg-transparent border-1 border-black rounded text-white"
-            placeholder="Search to add items..."
-            onKeyDown={(e) => setKey(e.key)}
-            onChange={(e) => handleSearch(e)}
-            value={searchValue}
-          />
-        </InputGroup>
         <Container
           className="d-flex flex-column"
           style={{

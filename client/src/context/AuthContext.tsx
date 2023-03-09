@@ -235,7 +235,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
     console.log(userData?.id, product);
     if (add.data) {
-      refreshContext();
+      return { message: "Successfully upserted item." };
+      // refreshContext();
     } else {
       return { message: "Something went wrong!" };
     }

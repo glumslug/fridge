@@ -33,7 +33,7 @@ const Store = () => {
   } = useAuth();
   const [searchResults, setSearchResults] = useState<searchItem[]>([]);
   const [isChecked, setIsChecked] = useState<number[]>([]);
-  const [searchValue, setSearchValue] = useState<string | null>(null);
+  const [searchValue, setSearchValue] = useState<string | null>("");
   const shoppingList = userData?.cart;
   const homeList = userData?.items;
   const [key, setKey] = useState("");
@@ -73,7 +73,7 @@ const Store = () => {
     handleClose();
 
     const result = await manageBasket({
-      product: selectedItem.product_id,
+      product: selectedItem.product,
       amount: -Math.abs(amount),
       action: selectedItem.quantity - amount > 0 ? "update" : "remove",
     });
@@ -112,11 +112,14 @@ const Store = () => {
   }, [basketData]);
 
   const handleAdd = (result: searchItem) => {
+    // Reset search bar
     setSearchResults([]);
     setSearchValue("");
+
+    // Check if already in cart
     const exists =
       shoppingList[result.bin].find(
-        (item: cart_item) => result.id == item.product
+        (item: cart_item) => result.product == item.product
       ) || false;
     if (exists) {
       toast.error(
@@ -125,18 +128,25 @@ const Store = () => {
       return;
     }
     let amount: number = 1;
-    addToCart({ product: result.id, amount: amount });
+    addToCart({ product: result.product, amount: amount });
   };
+
   const handlePurchase = async () => {
     let total = 0;
     const basket = JSON.parse(localStorage.getItem("basket"));
     console.log(basket);
-    Promise.all(
-      basket.items.map((item: basketItem) => {
+    const response = await Promise.all(
+      basket.items.map(async (item: basketItem) => {
         total += 1;
-        upsertItem({ product: item.product, amount: item.amount });
+        let res = await upsertItem({
+          product: item.product,
+          amount: item.amount,
+        });
+        return res?.message;
       })
-    ).then(() => toast.success(`Purchased ${total} items!`));
+    );
+    refreshContext();
+    toast.success(`Successfully added ${total} items.`);
   };
 
   return (
@@ -263,13 +273,14 @@ const Store = () => {
             gap: "10px",
           }}
         >
-          {searchResults.map((result) => {
+          {searchResults.map((result, i) => {
             return (
               <div
                 className="d-flex align-items-center"
                 style={{
                   gap: "10px",
                 }}
+                key={i}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

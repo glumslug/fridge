@@ -15,10 +15,9 @@ export interface item_generic {
 }
 
 export interface searchItem {
-  id: number;
+  product: number;
   name: string;
   bin: string;
-  aisle: string;
 }
 
 export interface user {

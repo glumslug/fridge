@@ -59,7 +59,7 @@ const Home = () => {
       <FridgeModal
         show={show}
         handleClose={handleClose}
-        selectedItem={selectedItem?.name || "nothing"}
+        selectedItem={selectedItem}
         handleManage={handelManage}
         atHome={atHome}
         handleAmount={handleAmount}

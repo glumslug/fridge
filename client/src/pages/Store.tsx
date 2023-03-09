@@ -26,7 +26,7 @@ const Store = () => {
     searchProducts,
     upsertItem,
     userData,
-    addToCart,
+    manageCart,
     basketData,
     manageBasket,
     refreshContext,
@@ -62,21 +62,28 @@ const Store = () => {
         (home_item: item_generic) => home_item.product == cart_item.product
       ).quantity || 0
     );
-
+    setAmount(cart_item.quantity);
     setShow(true);
   };
-  const handleManage = async () => {
+  const handleManageBasket = async (action: string) => {
     if (!selectedItem) {
       toast.error("Please select an item first!");
       return;
     }
-    handleClose();
-
-    const result = await manageBasket({
+    if (isChecked.includes(selectedItem.product)) {
+      const result = await manageBasket({
+        product: selectedItem.product,
+        amount: amount,
+        action: action,
+      });
+    }
+    manageCart({
       product: selectedItem.product,
-      amount: -Math.abs(amount),
-      action: selectedItem.quantity - amount > 0 ? "update" : "remove",
+      amount: amount,
+      action: action,
     });
+
+    handleClose();
   };
 
   const handleCheck = (item: cart_item, checked: boolean) => {
@@ -127,8 +134,8 @@ const Store = () => {
       );
       return;
     }
-    let amount: number = 1;
-    addToCart({ product: result.product, amount: amount });
+
+    manageCart({ product: result.product, amount: 1, action: "add" });
   };
 
   const handlePurchase = async () => {
@@ -145,7 +152,7 @@ const Store = () => {
         return res?.message;
       })
     );
-    refreshContext();
+    refreshContext("purchase");
     toast.success(`Successfully added ${total} items.`);
   };
 
@@ -155,7 +162,7 @@ const Store = () => {
         show={show}
         handleClose={handleClose}
         selectedItem={selectedItem}
-        handleManage={handleManage}
+        handleManageBasket={handleManageBasket}
         atHome={atHome}
         handleAmount={handleAmount}
         amount={amount}

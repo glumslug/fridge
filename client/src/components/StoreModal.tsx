@@ -8,15 +8,15 @@ type StoreModalProps = {
   selectedItem: cart_item | undefined;
   atHome: number;
   handleClose: () => void;
-  handleManage: () => void;
-  handleAmount: (type: string) => void;
+  handleManageBasket: (action: string) => void;
+  handleAmount: (action: string) => void;
   amount: number;
 };
 const StoreModal = ({
   show,
   handleClose,
   selectedItem,
-  handleManage,
+  handleManageBasket,
   atHome,
   handleAmount,
   amount,
@@ -30,27 +30,27 @@ const StoreModal = ({
           className="bg-black bright-active"
           style={{ borderBottom: "none" }}
         >
-          <Modal.Title>Cart</Modal.Title>
+          <Modal.Title>{selectedItem?.name}</Modal.Title>
         </Modal.Header>
         <Modal.Body className=" modal-active d-flex flex-column">
           {" "}
-          <div className="d-flex flex-row">
+          <div className="h4 d-flex flex-row">
             {" "}
-            In cart:{" "}
+            Adjust amount:{" "}
             <button
-              className="button-un mx-2"
+              // disabled={amount > 0 ? false : true}
+              className="button-un mx-2 amount-btn"
               onClick={() => handleAmount("less")}
             >
               &#10094;
             </button>{" "}
             <span className="amount">{amount}</span>{" "}
             <button
-              className="button-un mx-2"
+              className="button-un mx-2 amount-btn"
               onClick={() => handleAmount("more")}
             >
               &#10095;
             </button>{" "}
-            {selectedItem?.name}?{" "}
           </div>
           <span className="atHomeText">At home: {atHome}</span>
         </Modal.Body>
@@ -61,8 +61,15 @@ const StoreModal = ({
           <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
-          <Button variant="primary">Adjust</Button>
-          <Button variant="danger">Remove</Button>
+          <Button
+            variant="primary"
+            onClick={() => handleManageBasket("update")}
+          >
+            Adjust
+          </Button>
+          <Button variant="danger" onClick={() => handleManageBasket("remove")}>
+            Remove
+          </Button>
         </Modal.Footer>
       </Modal>
     </>

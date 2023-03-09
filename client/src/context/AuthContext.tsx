@@ -37,10 +37,14 @@ type Message = {
   message: string;
 };
 
+type refreshProps = {
+  action?: string;
+};
+
 type AuthContext = {
   userData: userData | null;
   basketData: basketData | null;
-  refreshContext: () => void;
+  refreshContext: (action?: string) => void;
   loginUser: ({
     email,
     password,
@@ -50,12 +54,11 @@ type AuthContext = {
   ) => Promise<searchItem[] | Error | AxiosResponse>;
   registerUser: ({ email, password, name }: credentials) => Promise<void>;
   logoutUser: () => void;
-  purchaseItems: ({
+  manageCart: ({
     product,
-    atHome,
     amount,
+    action,
   }: CRUD) => Promise<Message | undefined>;
-  addToCart: ({ product, amount }: CRUD) => Promise<Message | undefined>;
   manageBasket: ({ product, amount, action }: CRUD) => void;
   upsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
   manageItems: ({
@@ -78,7 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUserData(JSON.parse(localStorage.getItem("user")));
     setBasketData(JSON.parse(localStorage.getItem("basket")));
   }, []);
-  const refreshContext = async () => {
+  const refreshContext = async (action?: string) => {
     const response = await axios({
       url: "/db/fullContext/",
       method: "GET",
@@ -96,11 +99,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         cart: data.cart,
         token: userData?.token,
       };
-      localStorage.setItem("user", JSON.stringify(newData));
+
       setUserData(newData);
-      localStorage.removeItem("basket");
-      setBasketData(null);
+      localStorage.setItem("user", JSON.stringify(newData));
       console.log("refreshed");
+      console.log(action);
+      if (action == "purchase") {
+        localStorage.removeItem("basket");
+        setBasketData(null);
+      }
+      return { message: "Refreshed successfully." };
     }
   };
 
@@ -145,24 +153,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUserData(null);
   };
 
-  const purchaseItems = async ({ product, atHome, amount }: CRUD) => {
-    const add = await axios.post(
-      `/db/${atHome === 0 ? "add-item" : "update-item-quantity"}`,
-      {
-        product: product,
-        owner: userData?.id,
-        quantity: amount,
-      }
-    );
-    if (add.data) {
-      if (add.data.warningStatus == 0) {
-        refreshContext();
-      } else {
-        return { message: "Something went wrong!" };
-      }
-    }
-  };
-
   const manageItems = async ({ product, atHome, amount }: CRUD) => {
     const add = await axios.post(
       `/db/${atHome + amount == 0 ? "delete-item" : "update-item-quantity"}`,
@@ -182,9 +172,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const addToCart = async ({ product, amount }: CRUD) => {
+  const manageCart = async ({ product, amount, action }: CRUD) => {
+    // action is add, remove, or update
     const add = await axios({
-      url: "/db/cart/add",
+      url: "/db/cart/" + action,
       method: "POST",
       headers: {
         Authorization: `Bearer ${userData?.token}`,
@@ -197,7 +188,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     });
     if (add.data) {
       if (add.data.warningStatus == 0) {
-        toast.success("Added to cart!");
+        toast.success(
+          `Item ${action}${action == "add" ? "ed" : "d"} successfully.`
+        );
         refreshContext();
       } else {
         return { message: "Something went wrong!" };
@@ -208,7 +201,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const manageBasket = ({ product, amount, action }: CRUD) => {
     const basket = JSON.parse(localStorage.getItem("basket")) || { items: [] };
     let index = basket.items.findIndex((item) => item.product == product);
-
+    console.log(action);
     switch (action) {
       case "add":
         basket.items.push({ product, amount });
@@ -219,9 +212,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         basket.items.splice(index, 1);
         localStorage.setItem("basket", JSON.stringify(basket));
         setBasketData(basket);
+        break;
       case "update":
         basket.items[index].amount = amount;
         localStorage.setItem("basket", JSON.stringify(basket));
+        break;
       default:
         break;
     }
@@ -236,7 +231,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log(userData?.id, product);
     if (add.data) {
       return { message: "Successfully upserted item." };
-      // refreshContext();
+      // refreshContext("purchase");
     } else {
       return { message: "Something went wrong!" };
     }
@@ -267,8 +262,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         loginUser,
         registerUser,
         logoutUser,
-        purchaseItems,
-        addToCart,
+        manageCart,
         manageBasket,
         manageItems,
         refreshContext,

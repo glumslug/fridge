@@ -46,6 +46,12 @@
   }
 }
 
+.amount-btn {
+  &:hover {
+    color: #8bf0d0;
+  }
+}
+
 .button-un {
   all: unset;
 }

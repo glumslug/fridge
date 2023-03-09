@@ -134,6 +134,33 @@ app.post("/db/cart/add", protect, (req, res) => {
   });
 });
 
+//Update cart_item
+app.post("/db/cart/update", protect, (req, res) => {
+  const { product, quantity } = req.body;
+  const sqlUpdate =
+    "UPDATE cart SET quantity = ? WHERE owner = ? AND product = ?;";
+  db.query(sqlUpdate, [quantity, req.user, product], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+//Update cart_item
+app.post("/db/cart/remove", protect, (req, res) => {
+  const { product, quantity } = req.body;
+  const sqlDelete = "DELETE FROM cart WHERE owner = ? AND product = ?;";
+  db.query(sqlDelete, [req.user, product], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 //Get foodgroups
 app.get("/db/foodgroups", (req, res) => {
   const sqlSelect =

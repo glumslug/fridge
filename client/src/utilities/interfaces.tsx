@@ -14,10 +14,17 @@ export interface item_generic {
   product: number;
 }
 
-export interface searchItem {
+export interface productSearchItem {
   product: number;
   name: string;
   bin: string;
+}
+
+export interface recipeSearchItem {
+  id: number;
+  name: string;
+  author: string | null;
+  cuisine: string;
 }
 
 export interface user {

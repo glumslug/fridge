@@ -12,8 +12,8 @@ import {
   item,
   cart_item,
   items,
-  searchItem,
   basketData,
+  productSearchItem,
 } from "../utilities/interfaces";
 
 type credentials = {
@@ -51,7 +51,7 @@ type AuthContext = {
   }: credentials) => Promise<void | Error | AxiosResponse>;
   searchProducts: (
     search: string
-  ) => Promise<searchItem[] | Error | AxiosResponse>;
+  ) => Promise<productSearchItem[] | Error | AxiosResponse>;
   registerUser: ({ email, password, name }: credentials) => Promise<void>;
   logoutUser: () => void;
   manageCart: ({
@@ -136,13 +136,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
   const registerUser = async ({ email, password, name }: credentials) => {
-    const user = await axios.post("/db/register", {
-      email: email,
-      password: password,
-    });
-    if (user.data) {
-      localStorage.setItem("user", JSON.stringify(user.data));
-      setUserData(user.data);
+    try {
+      const response = await axios.post("/db/register", {
+        email: email,
+        password: password,
+        name: name,
+      });
+
+      if (response.data) {
+        localStorage.setItem("user", JSON.stringify(response.data));
+        setUserData(response.data);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data);
+      } else {
+        return error as Error;
+      }
     }
   };
 
@@ -241,7 +251,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await axios.post("db/products", { search: search });
 
-      return response.data as searchItem[];
+      return response.data as productSearchItem[];
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // Access to config, request, and response

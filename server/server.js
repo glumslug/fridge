@@ -308,6 +308,18 @@ app.post("/db/register", async (req, res) => {
               id: user.id,
               name: user.name,
               token: generateToken(user.id),
+              items: {
+                freezer: [],
+                fridge: [],
+                pantry: [],
+                closet: [],
+              },
+              cart: {
+                freezer: [],
+                fridge: [],
+                pantry: [],
+                closet: [],
+              },
             });
           }
         }
@@ -322,6 +334,21 @@ app.post("/db/products", async (req, res) => {
   const reg = "^" + search;
   const sqlQuery =
     "SELECT id as product, bin, name FROM products WHERE name REGEXP ?;";
+  db.query(sqlQuery, [reg], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+// search recipes
+app.post("/db/recipes", async (req, res) => {
+  const { search } = req.body;
+  const reg = "^" + search;
+  const sqlQuery =
+    "SELECT r.id as id, r.name as name, u.name as author, r.cuisine as cuisine from recipes r LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on a.user = u.id    WHERE r.name REGEXP ?;";
   db.query(sqlQuery, [reg], (err, result) => {
     if (err) {
       res.send(err);

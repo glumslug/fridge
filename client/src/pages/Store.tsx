@@ -5,7 +5,7 @@ import {
   cart_item,
   foodByGroup,
   item_generic,
-  searchItem,
+  productSearchItem,
   shoppingList,
 } from "../utilities/interfaces";
 import {
@@ -20,10 +20,10 @@ import {
 import StoreModal from "../components/StoreModal";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
+import ProductSearch from "../components/ProductSearch";
 
 const Store = () => {
   const {
-    searchProducts,
     upsertItem,
     userData,
     manageCart,
@@ -31,16 +31,15 @@ const Store = () => {
     manageBasket,
     refreshContext,
   } = useAuth();
-  const [searchResults, setSearchResults] = useState<searchItem[]>([]);
+
   const [isChecked, setIsChecked] = useState<number[]>([]);
-  const [searchValue, setSearchValue] = useState<string>("");
   const shoppingList = userData?.cart;
   const homeList = userData?.items;
-  const [key, setKey] = useState("");
   const [amount, setAmount] = useState<number>(1);
   const [selectedItem, setSelectedItem] = useState<cart_item>();
   const [show, setShow] = useState(false);
   const [atHome, setAtHome] = useState<number>(0);
+
   //Modal functions
   const handleClose = () => {
     setAmount(1);
@@ -60,11 +59,13 @@ const Store = () => {
     setAtHome(
       homeList[cart_item.bin].find(
         (home_item: item_generic) => home_item.product == cart_item.product
-      ).quantity || 0
+      )?.quantity || 0
     );
     setAmount(cart_item.quantity);
     setShow(true);
   };
+
+  // Cart functions
   const handleManageBasket = async (action: string) => {
     if (!selectedItem) {
       toast.error("Please select an item first!");
@@ -94,35 +95,8 @@ const Store = () => {
       action: action,
     });
   };
-  const handleSearch = async (e) => {
-    const str = e.target.value;
-    setSearchValue(str);
-    const len = str.split("").length;
-    if (
-      !str ||
-      (len === 0 && key === "Backspace") ||
-      (len === 0 && key === "Delete")
-    ) {
-      setSearchResults([]);
-    } else {
-      const results: searchItem[] = await searchProducts(str);
-      setSearchResults(results);
-    }
-  };
 
-  useEffect(() => {
-    let arr: number[] = [];
-    basketData?.items.map((item) => {
-      arr.push(item.product);
-    });
-    setIsChecked(arr);
-  }, [basketData]);
-
-  const handleAdd = (result: searchItem) => {
-    // Reset search bar
-    setSearchResults([]);
-    setSearchValue("");
-
+  const handleAdd = (result: productSearchItem) => {
     // Check if already in cart
     const exists =
       shoppingList[result.bin].find(
@@ -155,6 +129,15 @@ const Store = () => {
     refreshContext("purchase");
     toast.success(`Successfully added ${total} items.`);
   };
+
+  // Preserve checks on refresh
+  useEffect(() => {
+    let arr: number[] = [];
+    basketData?.items.map((item) => {
+      arr.push(item.product);
+    });
+    setIsChecked(arr);
+  }, [basketData]);
 
   return (
     <div>
@@ -252,18 +235,7 @@ const Store = () => {
           className="mx-1 d-flex justify-content-between flex-nowrap"
         >
           {/* Product search */}
-          <InputGroup className="p-0" style={{ flexShrink: "1" }}>
-            <Form.Control
-              aria-label="Default"
-              aria-describedby="inputGroup-sizing-default"
-              className="py-0 bg-transparent border-1 border-black rounded text-white"
-              placeholder="Search to add items..."
-              onKeyDown={(e) => setKey(e.key)}
-              onChange={(e) => handleSearch(e)}
-              style={{ border: "2px solid #5b5b5b" }}
-              value={searchValue}
-            />
-          </InputGroup>
+          <ProductSearch handleAdd={handleAdd} />
           <Button
             variant="outline-dark"
             style={{
@@ -281,49 +253,6 @@ const Store = () => {
             Checkout
           </Button>
         </Row>
-        <Container
-          className="d-flex flex-column"
-          style={{
-            gap: "10px",
-          }}
-        >
-          {searchResults.map((result, i) => {
-            return (
-              <div
-                className="d-flex align-items-center"
-                style={{
-                  gap: "10px",
-                }}
-                key={i}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  fill="currentColor"
-                  className="bi bi-plus-circle"
-                  viewBox="0 0 16 16"
-                >
-                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-                </svg>
-                <Card
-                  style={{
-                    width: "40rem",
-                    background: "black",
-                    // border: "#6ba2d5 1.5px solid",
-                    gap: "10px",
-                    padding: "3px 8px",
-                  }}
-                  onClick={() => handleAdd(result)}
-                  className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
-                >
-                  {result.name}
-                </Card>
-              </div>
-            );
-          })}
-        </Container>
       </div>
     </div>
   );

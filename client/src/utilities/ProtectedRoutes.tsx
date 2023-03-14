@@ -3,7 +3,8 @@ import { Navigate, Outlet } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 const UserProtected = () => {
-  const { userData } = useContext(AuthContext);
+  const userData = localStorage.getItem("user");
+  console.log("User Protected");
   console.log(userData);
 
   return userData ? <Outlet /> : <Navigate to="/login" />;
@@ -11,7 +12,7 @@ const UserProtected = () => {
 
 const NoUser = () => {
   const { userData } = useContext(AuthContext);
-  console.log(userData);
+  console.log("No User");
 
   return userData ? <Navigate to="/" /> : <Outlet />;
 };

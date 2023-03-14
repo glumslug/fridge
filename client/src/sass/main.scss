@@ -68,6 +68,13 @@
   border: #df5296 1.5px solid;
 }
 
+.bright-fill {
+  cursor: pointer;
+  &:hover {
+    fill: #52a9df;
+  }
+}
+
 .modal-active {
   border-left: #df5296 1.5px solid;
   border-right: #df5296 1.5px solid;

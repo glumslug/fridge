@@ -37,17 +37,23 @@ app.get("/", (req, res) => {
   res.send("The Fridge Opens Ominously");
 });
 
-//Get full context (user, items, cart)
+//Get full context
 app.get("/db/fullContext", protect, (req, res) => {
+  const id = req.user;
   const sqlSelect =
-    "SELECT JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c join products p on c.product = p.id join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ?;";
-  db.query(sqlSelect, [req.user, req.user], (err, result) => {
+    "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.name, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'author_alias', a.alias)) as 'recipes' from recipes r LEFT join users u on r.author = u.id JOIN authors a on a.id = r.author GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.id, 'author_id', r.author, 'author_name', u.name, 'author_alias', a.alias,'cuisine', r.cuisine, 'title', r.name, 'recipe_id', sr.recipe )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on u.id = a.user group by sr.user having sr.user = ?";
+  db.query(sqlSelect, [id, id, id, id], (err, result) => {
     if (err) {
       res.status(400);
       res.send(err);
     } else {
-      const items = result[0]?.contents || [];
-      const cart = result[1]?.contents || [];
+      const cart = result.find((u) => u.items == "cart")?.contents || [];
+      const items = result.find((u) => u.items == "items")?.contents || [];
+      const myRecipes =
+        result.find((u) => u.items == "myRecipes")?.contents || [];
+      const savedRecipes =
+        result.find((u) => u.items == "savedRecipes")?.contents || [];
+      // res.send(items);
       res.send({
         items: {
           freezer: items.filter((item) => item.bin == "freezer"),
@@ -61,6 +67,8 @@ app.get("/db/fullContext", protect, (req, res) => {
           pantry: cart.filter((item) => item.bin == "pantry"),
           closet: cart.filter((item) => item.bin == "closet"),
         },
+        myRecipes: myRecipes,
+        savedRecipes: savedRecipes,
       });
     }
   });
@@ -235,8 +243,8 @@ app.get("/db/shoppingList", protect, (req, res) => {
   });
 });
 
-//Login a user
-app.post("/db/login", (req, res) => {
+//Login a user OLD
+app.post("/db/loginOLD", (req, res) => {
   const { email, password } = req.body;
   if (!email) {
     res.send("Please type your email!");
@@ -286,6 +294,68 @@ app.post("/db/login", (req, res) => {
   });
 });
 
+//Login a user
+app.post("/db/login", (req, res) => {
+  const { email, password } = req.body;
+  const sqlSelect =
+    "SELECT u.email as email, u.password as password, u.id as id, u.name as name from users u where u.email = ?;";
+  db.query(sqlSelect, [email], async (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      if (result.length < 1) {
+        res.status(400);
+        res.send("User doesn't exist!");
+      } else {
+        const user = result[0];
+        if (await bcrypt.compare(password, user.password)) {
+          const id = user.id;
+          const sqlSelect2 =
+            "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.name, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'author_alias', a.alias)) as 'recipes' from recipes r LEFT join users u on r.author = u.id JOIN authors a on a.id = r.author GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.id, 'author_id', r.author, 'author_name', u.name, 'author_alias', a.alias,'cuisine', r.cuisine, 'title', r.name, 'recipe_id', sr.recipe )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on u.id = a.user group by sr.user having sr.user = ?";
+          db.query(sqlSelect2, [id, id, id, id], (err, result) => {
+            if (err) {
+              res.status(400);
+              res.send(err);
+            } else {
+              const cart =
+                result.find((u) => u.items == "cart")?.contents || [];
+              const items =
+                result.find((u) => u.items == "items")?.contents || [];
+              const myRecipes =
+                result.find((u) => u.items == "myRecipes")?.contents || [];
+              const savedRecipes =
+                result.find((u) => u.items == "savedRecipes")?.contents || [];
+              // res.send(items);
+              res.send({
+                id: user.id,
+                name: user.name,
+                token: generateToken(user.id),
+                items: {
+                  freezer: items.filter((item) => item.bin == "freezer"),
+                  fridge: items.filter((item) => item.bin == "fridge"),
+                  pantry: items.filter((item) => item.bin == "pantry"),
+                  closet: items.filter((item) => item.bin == "closet"),
+                },
+                cart: {
+                  freezer: cart.filter((item) => item.bin == "freezer"),
+                  fridge: cart.filter((item) => item.bin == "fridge"),
+                  pantry: cart.filter((item) => item.bin == "pantry"),
+                  closet: cart.filter((item) => item.bin == "closet"),
+                },
+                myRecipes: myRecipes,
+                savedRecipes: savedRecipes,
+              });
+            }
+          });
+        } else {
+          res.status(400);
+          res.send("Email and password don't match!");
+        }
+      }
+    }
+  });
+});
+
 // Register a user
 app.post("/db/register", async (req, res) => {
   const { email, password, name } = req.body;
@@ -320,6 +390,8 @@ app.post("/db/register", async (req, res) => {
                 pantry: [],
                 closet: [],
               },
+              myRecipes: [],
+              savedRecipes: [],
             });
           }
         }
@@ -348,7 +420,7 @@ app.post("/db/recipes", async (req, res) => {
   const { search } = req.body;
   const reg = "^" + search;
   const sqlQuery =
-    "SELECT r.id as id, r.name as name, u.name as author, r.cuisine as cuisine from recipes r LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on a.user = u.id    WHERE r.name REGEXP ?;";
+    "SELECT r.id as id, r.name as title, r.cuisine as cuisine, u.name as author_name, r.author as author_id, a.alias as author_alias from recipes r LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on a.user = u.id WHERE r.name REGEXP ?;";
   db.query(sqlQuery, [reg], (err, result) => {
     if (err) {
       res.send(err);

@@ -52,7 +52,11 @@ type AuthContext = {
   searchProducts: (
     search: string
   ) => Promise<productSearchItem[] | Error | AxiosResponse>;
-  registerUser: ({ email, password, name }: credentials) => Promise<void>;
+  registerUser: ({
+    email,
+    password,
+    name,
+  }: credentials) => Promise<void | Error | AxiosResponse>;
   logoutUser: () => void;
   manageCart: ({
     product,

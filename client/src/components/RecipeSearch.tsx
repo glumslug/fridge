@@ -2,14 +2,15 @@ import axios, { AxiosResponse } from "axios";
 import React, { useState } from "react";
 import { Card, Container, InputGroup, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
-import { recipeSearchItem } from "../utilities/interfaces";
+import { recipe } from "../utilities/interfaces";
+import RecipeResult from "./RecipeResult";
 
 type searchProps = {
-  handleOpen: (results: recipeSearchItem) => void;
+  handleOpen: (results: recipe) => void;
 };
 
 const RecipeSearch = ({ handleOpen }: searchProps) => {
-  const [searchResults, setSearchResults] = useState<recipeSearchItem[]>([]);
+  const [searchResults, setSearchResults] = useState<recipe[]>([]);
   const [searchValue, setSearchValue] = useState<string>("");
   const [key, setKey] = useState("");
 
@@ -42,7 +43,7 @@ const RecipeSearch = ({ handleOpen }: searchProps) => {
     }
   };
 
-  const handleSelect = (result: recipeSearchItem) => {
+  const handleSelect = (result: recipe) => {
     // Reset search bar
     setSearchResults([]);
     setSearchValue("");
@@ -70,38 +71,7 @@ const RecipeSearch = ({ handleOpen }: searchProps) => {
       </InputGroup>
 
       {searchResults.map((result, i) => {
-        return (
-          <Card
-            style={{
-              width: "100%",
-
-              gap: "10px",
-              padding: "3px 8px",
-              // border: "1px solid #529CDF",
-              background: "#202020",
-            }}
-            onClick={() => handleSelect(result)}
-            className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
-          >
-            {result.name}
-            <div className="d-flex" style={{ gap: "5px" }}>
-              {result.author ? (
-                <div
-                  style={{ width: "auto", background: "#AB6969" }}
-                  className="text-center rounded px-1"
-                >
-                  {result.author}
-                </div>
-              ) : null}
-              <div
-                style={{ width: "auto", background: "#69A7AB" }}
-                className="text-center rounded px-1"
-              >
-                {result.cuisine}
-              </div>
-            </div>
-          </Card>
-        );
+        return <RecipeResult result={result} handleSelect={handleSelect} />;
       })}
     </>
   );

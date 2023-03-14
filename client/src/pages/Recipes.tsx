@@ -1,18 +1,27 @@
 import { Row } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
+import RecipeResult from "../components/RecipeResult";
 import RecipeSearch from "../components/RecipeSearch";
+import { useAuth } from "../context/AuthContext";
+import { recipe, recipeSearchItem } from "../utilities/interfaces";
 
 function Recipes() {
   // Recipe search and select page, options to filter, search, add new
   // Selecting a recipe or adding new will lead to the same recipe details component
   // Search should be exported to a utility component
-
-  const handleOpen = (result) => {
+  const { userData } = useAuth();
+  const myRecipes = userData?.myRecipes;
+  const savedRecipes = userData?.savedRecipes;
+  const handleOpen = (result: recipeSearchItem | recipe) => {
     alert(JSON.stringify(result));
   };
   const handleNew = () => {
     alert("New recipe");
+  };
+
+  const handleSelect = (result: recipe) => {
+    handleOpen(result);
   };
   return (
     <>
@@ -37,9 +46,43 @@ function Recipes() {
         >
           <RecipeSearch handleOpen={handleOpen} />
           {/* My recipes section */}
+          {myRecipes !== undefined && myRecipes?.length > 0 ? (
+            <div
+              style={{
+                borderBottom: "2px solid #3960E8",
+
+                marginTop: "1rem",
+                width: "100%",
+                color: "#3960E8",
+              }}
+            >
+              My Recipes
+            </div>
+          ) : null}
+          {myRecipes?.map((rec) => {
+            return <RecipeResult handleSelect={handleSelect} result={rec} />;
+          })}
+
+          {/* Saved recipes section */}
+          {savedRecipes !== undefined && savedRecipes?.length > 0 ? (
+            <div
+              style={{
+                borderBottom: "2px solid #3960E8",
+
+                marginTop: "1rem",
+                width: "100%",
+                color: "#3960E8",
+              }}
+            >
+              Saved Recipes
+            </div>
+          ) : null}
+          {savedRecipes?.map((sav) => {
+            return <RecipeResult handleSelect={handleSelect} result={sav} />;
+          })}
 
           {/* Add new button */}
-          <div className="p-0 d-flex flex-row justify-content-end align-items-center">
+          <div className="my-2 w-100 p-0 d-flex flex-row justify-content-end align-items-center">
             {/* <div className="mx-1">&#43;</div> */}
             <svg
               xmlns="http://www.w3.org/2000/svg"

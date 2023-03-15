@@ -4,8 +4,6 @@ import { AuthContext } from "../context/AuthContext";
 
 const UserProtected = () => {
   const userData = localStorage.getItem("user");
-  console.log("User Protected");
-  console.log(userData);
 
   return userData ? <Outlet /> : <Navigate to="/login" />;
 };

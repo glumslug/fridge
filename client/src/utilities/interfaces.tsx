@@ -4,14 +4,6 @@ export interface productSearchItem {
   bin: string;
 }
 
-export interface recipeSearchItem {
-  id: number;
-  name: string;
-  author: string | null;
-  alias: string | null;
-  cuisine: string;
-}
-
 export interface user {
   id: number;
   name: string;
@@ -83,4 +75,22 @@ export interface recipe {
   author_name: string | null;
   author_alias: string | null;
   recipe_id?: number;
+}
+
+export interface recipeSearchItem {
+  id: number;
+  name: string;
+  author: string | null;
+  alias: string | null;
+  cuisine: string;
+}
+
+export interface recipeDetails {
+  ingredient_id: number;
+  product_id: number;
+  name: string;
+  amount: number;
+  unit_short: string;
+  unit_singular: string;
+  unit_plural: string;
 }

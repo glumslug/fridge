@@ -15,6 +15,7 @@ import {
   basketData,
   productSearchItem,
 } from "../utilities/interfaces";
+import { useNavigate } from "react-router-dom";
 
 type credentials = {
   email: string;
@@ -80,6 +81,7 @@ export function useAuth() {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [userData, setUserData] = useState<userData | null>(null);
   const [basketData, setBasketData] = useState<basketData | null>(null);
+  const navigate = useNavigate();
   //Get context from localstorage on page refresh
   useEffect(() => {
     setUserData(JSON.parse(localStorage.getItem("user")));
@@ -94,14 +96,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         "Content-Type": "application/json",
       },
     });
-    if (response.data) {
-      const data: { items: items[]; cart: cart_item } = response.data;
+    if (response.data && userData) {
+      const data: userData = response.data;
       const newData = {
-        id: userData?.id,
-        name: userData?.name,
+        id: userData.id,
+        name: userData.name,
         items: data.items,
         cart: data.cart,
         token: userData?.token,
+        myRecipes: data.myRecipes,
+        savedRecipes: data.savedRecipes,
       };
 
       setUserData(newData);
@@ -165,6 +169,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem("basket");
     setBasketData(null);
     setUserData(null);
+    navigate(0);
   };
 
   const manageItems = async ({ product, atHome, amount }: CRUD) => {

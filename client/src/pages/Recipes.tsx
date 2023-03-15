@@ -18,13 +18,13 @@ function Recipes() {
   const { userData } = useAuth();
   const myRecipes = userData?.myRecipes;
   const savedRecipes = userData?.savedRecipes;
-  const handleOpen = (result: recipeSearchItem | recipe) => {
-    alert(JSON.stringify(result));
-  };
+
+  // handler for creating new recipe
   const handleNew = () => {
     alert("New recipe");
   };
 
+  // handler for selecting recipe, switcheds to recipe details view
   const handleSelect = (result: recipe) => {
     setSelectedRecipe(result);
     setView("details");
@@ -53,7 +53,7 @@ function Recipes() {
             className="shadow-lg mt-3 mx-1 position-relative p-2 w-100 rounded d-flex flex-column align-items-start "
             sm={5}
           >
-            <RecipeSearch handleOpen={handleOpen} />
+            <RecipeSearch handleOpen={handleSelect} />
             {/* My recipes section */}
             {myRecipes !== undefined && myRecipes?.length > 0 ? (
               <div

@@ -11,9 +11,6 @@ import { toast } from "react-toastify";
 const Home = () => {
   const navigate = useNavigate();
   const { userData, manageItems } = useAuth();
-  if (!userData) {
-    navigate("/");
-  }
   const [amount, setAmount] = useState<number>(1);
   const [selectedItem, setSelectedItem] = useState<item>();
   const [show, setShow] = useState(false);

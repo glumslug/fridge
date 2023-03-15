@@ -430,6 +430,20 @@ app.post("/db/recipes", async (req, res) => {
   });
 });
 
+// get recipe details
+app.get("/db/recipes/:id", async (req, res) => {
+  const { id } = req.params;
+  const sqlSelect =
+    "SELECT i.id as ingredient_id, p.id as product_id, p.name as name, i.amount as amount, un.short as unit_short, un.singular as unit_singular, un.plural as unit_plural from recipes r join ingredients i on r.id = i.recipe join products p on p.id = i.product join units un on un.id = i.unit where r.id = ?;";
+  db.query(sqlSelect, [id], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 // Generate JWT
 const generateToken = (id, exp) => {
   const period = exp ? exp : "30d";

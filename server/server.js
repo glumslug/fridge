@@ -132,6 +132,19 @@ app.post("/db/cart/add", protect, (req, res) => {
   });
 });
 
+//Add multiple cart_item
+app.post("/db/cart/bulkAdd", protect, (req, res) => {
+  const { values } = req.body;
+  const sqlInsert = "insert into cart (owner, product, quantity) values ?;";
+  db.query(sqlInsert, [values], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 //Update cart_item
 app.post("/db/cart/update", protect, (req, res) => {
   const { product, quantity } = req.body;

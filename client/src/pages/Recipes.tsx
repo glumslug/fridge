@@ -69,7 +69,13 @@ function Recipes() {
               </div>
             ) : null}
             {myRecipes?.map((rec) => {
-              return <RecipeResult handleSelect={handleSelect} result={rec} />;
+              return (
+                <RecipeResult
+                  handleSelect={handleSelect}
+                  result={rec}
+                  key={rec.id}
+                />
+              );
             })}
 
             {/* Saved recipes section */}
@@ -87,7 +93,13 @@ function Recipes() {
               </div>
             ) : null}
             {savedRecipes?.map((sav) => {
-              return <RecipeResult handleSelect={handleSelect} result={sav} />;
+              return (
+                <RecipeResult
+                  handleSelect={handleSelect}
+                  result={sav}
+                  key={sav.recipe_id}
+                />
+              );
             })}
 
             {/* Add new button */}

@@ -11,14 +11,20 @@ type RecipeDetailsProps = {
   recipe: recipe;
   setView: (arg0: string) => void;
 };
+type stockItem = {
+  product_id: number;
+  amount: number;
+  atHome: boolean;
+};
 const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
   // console.log(recipe);
   // GET recipe details via axios, select recipes, join ingredients, products, and units?=> shouldn't units just be strings?
   const id = recipe.recipe_id || recipe.id;
   const [recipeDetails, setRecipeDetails] = useState<ingredient[] | null>();
   const [edit, setEdit] = useState(false);
-  const [cartList, setCartList] = useState();
-  const { userData } = useAuth();
+  const [stock, setStock] = useState<stockItem[] | null>();
+  const { userData, bulkCartAdd } = useAuth();
+  const userId = userData?.id;
 
   useEffect(() => {
     (async () => {
@@ -26,6 +32,20 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
         const response = await axios.get("/db/recipes/" + id);
         if (response.data) {
           setRecipeDetails(response.data);
+          if (userData) {
+            let arr: stockItem[] = [];
+            response.data.map((ingredient: ingredient) => {
+              arr.push({
+                product_id: ingredient.product_id,
+                amount: ingredient.amount,
+                atHome: userData.items.some(
+                  (item) => item.product == ingredient.product_id
+                ),
+              });
+            });
+            setStock(arr);
+            console.log(arr);
+          }
         }
       } catch (error) {
         toast.error(JSON.stringify(error));
@@ -48,16 +68,15 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
     return str;
   };
 
-  const atHomeCheck = (product_id: number) => {
-    let have = userData?.items.some((item) => item.product == product_id);
-    if (!have) {
-    }
-    console.log(product_id);
-    return have;
-  };
-
   const handleShop = () => {
-    alert("Shoppin");
+    // [[owner, product, quantity]]
+    // This is going to mess up if item is already in cart, I should create an upsert,
+    // Also should have a feature that shows whats in the cart already in addition to at home
+    let arr: number[][] = [];
+    stock?.map((item) => {
+      item.atHome ? null : arr.push([userId, item.product_id, item.amount]);
+    });
+    bulkCartAdd({ values: arr });
   };
 
   const handleCook = () => {
@@ -75,7 +94,7 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
 
           color: "#71CDEA",
         }}
-        className="px-1 d-flex align-items-center justify-content-between"
+        className=" d-flex align-items-center justify-content-between"
       >
         <div className="px-1 d-flex align-items-center" style={{ gap: "15px" }}>
           <svg
@@ -88,7 +107,7 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
             onClick={() => setView("overview")}
           >
             <path
-              fill-rule="evenodd"
+              fillRule="evenodd"
               d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"
             />
           </svg>
@@ -142,7 +161,7 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
             xs="1"
             className="d-flex align-items-center justify-content-center"
           >
-            Home
+            Status
           </Col>
         </Row>
         {/* Search bar - only in edit mode */}
@@ -150,7 +169,7 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
         {/* Ingredients */}
         {recipeDetails?.map((g: ingredient) => {
           return (
-            <Row className="d-flex mb-1">
+            <Row className="d-flex mb-1" key={g.ingredient_id}>
               {/* Title */}
               <Col
                 style={{
@@ -189,8 +208,29 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
               </Col>
 
               {/* At Home */}
-              <Col xs="1" className="d-flex justify-content-center">
-                <input type="checkbox" checked={atHomeCheck(g.product_id)} />
+              <Col
+                xs="1"
+                className="d-flex justify-content-center align-items-center"
+              >
+                {/* <input
+                  type="checkbox"
+                  readOnly
+                  style={{ accentColor: "orange" }}
+                  checked={
+                    stock?.find(
+                      (ingredient) => ingredient.product_id == g.product_id
+                    )?.atHome
+                  }
+                /> */}
+                <div
+                  style={{
+                    minWidth: "1rem",
+                    minHeight: "1rem",
+                    background: "grey",
+                    borderRadius: "3px",
+                    border: "1px solid black",
+                  }}
+                ></div>
               </Col>
             </Row>
           );

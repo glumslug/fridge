@@ -10,10 +10,8 @@ const RecipeResult = ({ result, handleSelect }: RecipeResultProps) => {
     <Card
       style={{
         width: "100%",
-
         gap: "10px",
         padding: "3px 8px",
-        // border: "1px solid #529CDF",
         background: "#202020",
       }}
       onClick={() => handleSelect(result)}

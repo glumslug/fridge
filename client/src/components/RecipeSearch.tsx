@@ -71,7 +71,9 @@ const RecipeSearch = ({ handleOpen }: searchProps) => {
       </InputGroup>
 
       {searchResults.map((result, i) => {
-        return <RecipeResult result={result} handleSelect={handleSelect} />;
+        return (
+          <RecipeResult result={result} handleSelect={handleSelect} key={i} />
+        );
       })}
     </>
   );

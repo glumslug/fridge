@@ -27,6 +27,10 @@ type CRUD = {
   action?: string;
 };
 
+type bulkAddProps = {
+  values: number[][];
+};
+
 type AuthProviderProps = {
   children: ReactNode;
 };
@@ -57,6 +61,7 @@ type AuthContext = {
     amount,
     action,
   }: CRUD) => Promise<Message | undefined>;
+  bulkCartAdd: ({ values }: bulkAddProps) => Promise<Message | undefined>;
   manageBasket: ({ product, amount, action }: CRUD) => void;
   upsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
   manageItems: ({
@@ -184,6 +189,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Add things to your shopping list **probably should refactor to call this list
   const manageCart = async ({ product, amount, action }: CRUD) => {
     // action is add, remove, or update
     const add = await axios({
@@ -210,7 +216,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  // Add things to your shopping list in bulk
+  const bulkCartAdd = async ({ values }: bulkAddProps) => {
+    // action is add, remove, or update
+    const add = await axios({
+      url: "/db/cart/bulkAdd",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${userData?.token}`,
+        "Content-Type": "application/json",
+      },
+      data: {
+        values: values,
+      },
+    });
+    if (add.data) {
+      if (add.data.warningStatus == 0) {
+        toast.success(`Items added successfully.`);
+        refreshContext();
+      } else {
+        return { message: "Something went wrong!" };
+      }
+    }
+  };
+
   const manageBasket = ({ product, amount, action }: CRUD) => {
+    // This is for when you're shopping, adding things to your purchase order
     const basket = JSON.parse(localStorage.getItem("basket")) || { items: [] };
     let index = basket.items.findIndex((item) => item.product == product);
     console.log(action);
@@ -275,6 +306,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         registerUser,
         logoutUser,
         manageCart,
+        bulkCartAdd,
         manageBasket,
         manageItems,
         refreshContext,

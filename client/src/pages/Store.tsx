@@ -33,6 +33,13 @@ const Store = () => {
 
   const [isChecked, setIsChecked] = useState<number[]>([]);
   const shoppingList = userData?.cart;
+  const binCart = {
+    freezer: shoppingList?.filter((item) => item.bin == "freezer"),
+    fridge: shoppingList?.filter((item) => item.bin == "fridge"),
+    pantry: shoppingList?.filter((item) => item.bin == "pantry"),
+    closet: shoppingList?.filter((item) => item.bin == "closet"),
+  };
+  const bins = ["freezer", "fridge", "pantry", "closet"];
   const homeList = userData?.items;
   const [amount, setAmount] = useState<number>(1);
   const [selectedItem, setSelectedItem] = useState<cart_item>();
@@ -56,7 +63,7 @@ const Store = () => {
   const handleShow = (cart_item: cart_item) => {
     setSelectedItem(cart_item);
     setAtHome(
-      homeList[cart_item.bin].find(
+      homeList?.find(
         (home_item: item_generic) => home_item.product == cart_item.product
       )?.quantity || 0
     );
@@ -97,10 +104,9 @@ const Store = () => {
 
   const handleAdd = (result: productSearchItem) => {
     // Check if already in cart
-    const exists =
-      shoppingList[result.bin].find(
-        (item: cart_item) => result.product == item.product
-      ) || false;
+    const exists = shoppingList?.some(
+      (item: cart_item) => result.product == item.product
+    );
     if (exists) {
       toast.error(
         "Item already in cart! Adjust quantity by tapping cart-item."
@@ -169,11 +175,11 @@ const Store = () => {
           sm={5}
         >
           {shoppingList
-            ? Object.keys(shoppingList).map((bin, i) => {
+            ? bins.map((bin, i) => {
                 return (
                   <div key={bin} className="w-100">
                     {/* Bin title */}
-                    {shoppingList[bin].length > 0 && (
+                    {binCart[bin].length > 0 && (
                       <div
                         style={{
                           borderBottom: "2px solid #A1D3FF",
@@ -185,7 +191,7 @@ const Store = () => {
                     )}
                     {/* Bin items */}
                     <div className="row w-100">
-                      {shoppingList[bin].map((item: cart_item, i: number) => {
+                      {binCart[bin].map((item: cart_item, i: number) => {
                         return (
                           <div
                             className="col-md-4 col-6 d-flex align-items-center"

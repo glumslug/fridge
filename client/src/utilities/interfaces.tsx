@@ -15,8 +15,8 @@ export interface userData {
   name: string;
   id: number;
   token: string;
-  items: items;
-  cart: shoppingList;
+  items: item[];
+  cart: cart_item[];
   myRecipes: recipe[];
   savedRecipes: recipe[];
 }
@@ -85,7 +85,7 @@ export interface recipeSearchItem {
   cuisine: string;
 }
 
-export interface recipeDetails {
+export interface ingredient {
   ingredient_id: number;
   product_id: number;
   name: string;

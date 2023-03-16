@@ -9,9 +9,6 @@ import {
 } from "react";
 import {
   userData,
-  item,
-  cart_item,
-  items,
   basketData,
   productSearchItem,
 } from "../utilities/interfaces";
@@ -36,10 +33,6 @@ type AuthProviderProps = {
 
 type Message = {
   message: string;
-};
-
-type refreshProps = {
-  action?: string;
 };
 
 type AuthContext = {

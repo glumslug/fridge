@@ -55,18 +55,8 @@ app.get("/db/fullContext", protect, (req, res) => {
         result.find((u) => u.items == "savedRecipes")?.contents || [];
       // res.send(items);
       res.send({
-        items: {
-          freezer: items.filter((item) => item.bin == "freezer"),
-          fridge: items.filter((item) => item.bin == "fridge"),
-          pantry: items.filter((item) => item.bin == "pantry"),
-          closet: items.filter((item) => item.bin == "closet"),
-        },
-        cart: {
-          freezer: cart.filter((item) => item.bin == "freezer"),
-          fridge: cart.filter((item) => item.bin == "fridge"),
-          pantry: cart.filter((item) => item.bin == "pantry"),
-          closet: cart.filter((item) => item.bin == "closet"),
-        },
+        items: items,
+        cart: cart,
         myRecipes: myRecipes,
         savedRecipes: savedRecipes,
       });
@@ -330,18 +320,8 @@ app.post("/db/login", (req, res) => {
                 id: user.id,
                 name: user.name,
                 token: generateToken(user.id),
-                items: {
-                  freezer: items.filter((item) => item.bin == "freezer"),
-                  fridge: items.filter((item) => item.bin == "fridge"),
-                  pantry: items.filter((item) => item.bin == "pantry"),
-                  closet: items.filter((item) => item.bin == "closet"),
-                },
-                cart: {
-                  freezer: cart.filter((item) => item.bin == "freezer"),
-                  fridge: cart.filter((item) => item.bin == "fridge"),
-                  pantry: cart.filter((item) => item.bin == "pantry"),
-                  closet: cart.filter((item) => item.bin == "closet"),
-                },
+                items: items,
+                cart: cart,
                 myRecipes: myRecipes,
                 savedRecipes: savedRecipes,
               });

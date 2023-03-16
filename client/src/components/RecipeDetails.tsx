@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { ingredient, recipe } from "../utilities/interfaces";
 import Fraction from "fraction.js";
 import { useAuth } from "../context/AuthContext";
+import ProductSearch from "./ProductSearch";
 
 type RecipeDetailsProps = {
   recipe: recipe;
@@ -16,6 +17,7 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
   const id = recipe.recipe_id || recipe.id;
   const [recipeDetails, setRecipeDetails] = useState<ingredient[] | null>();
   const [edit, setEdit] = useState(false);
+  const [cartList, setCartList] = useState();
   const { userData } = useAuth();
 
   useEffect(() => {
@@ -47,14 +49,19 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
   };
 
   const atHomeCheck = (product_id: number) => {
-    let ret = false;
-    userData
-      ? Object.keys(userData.items).map((bin) => {
-          if (userData.items[bin].find((item) => item.product == product_id))
-            ret = true;
-        })
-      : null;
-    return ret;
+    let have = userData?.items.some((item) => item.product == product_id);
+    if (!have) {
+    }
+    console.log(product_id);
+    return have;
+  };
+
+  const handleShop = () => {
+    alert("Shoppin");
+  };
+
+  const handleCook = () => {
+    alert("Bookum");
   };
 
   return (
@@ -114,6 +121,7 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
           )}
         </>
       </div>
+      {/* Recipe ingredients */}
       <Container>
         {/* Header Row */}
         <Row className="mb-2" style={{ fontSize: "13px" }}>
@@ -137,6 +145,8 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
             Home
           </Col>
         </Row>
+        {/* Search bar - only in edit mode */}
+        {/* {edit ? <IngredientSearch handleAdd={handleAdd}/> : null} */}
         {/* Ingredients */}
         {recipeDetails?.map((g: ingredient) => {
           return (
@@ -186,6 +196,26 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
           );
         })}
       </Container>
+      <div
+        className="mt-2 pt-1 d-flex gap-2 w-100 justify-content-end"
+        style={{
+          borderTop: "2px solid #3960E8",
+        }}
+      >
+        <div
+          className="rounded my-1 p-1 px-3 text-white bright-orange"
+          onClick={() => handleShop()}
+        >
+          Shop
+        </div>
+
+        <div
+          className="rounded my-1 p-1 px-3 text-white bright-submit2"
+          onClick={() => handleCook()}
+        >
+          Cook
+        </div>
+      </div>
     </>
   );
 };

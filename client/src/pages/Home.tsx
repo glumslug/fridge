@@ -9,8 +9,13 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Home = () => {
-  const navigate = useNavigate();
   const { userData, manageItems } = useAuth();
+  const binData = {
+    freezer: userData?.items.filter((item) => item.bin == "freezer"),
+    fridge: userData?.items.filter((item) => item.bin == "fridge"),
+    pantry: userData?.items.filter((item) => item.bin == "pantry"),
+    closet: userData?.items.filter((item) => item.bin == "closet"),
+  };
   const [amount, setAmount] = useState<number>(1);
   const [selectedItem, setSelectedItem] = useState<item>();
   const [show, setShow] = useState(false);
@@ -66,26 +71,10 @@ const Home = () => {
       <h1 className="text-white mt-5">Home</h1>
 
       <Container className="mx-2 p-2 d-flex flex-column align-items-sm-center align-items-md-start">
-        <Shelf
-          bin="Freezer"
-          items={userData?.items.freezer}
-          handleShow={handleShow}
-        />
-        <Shelf
-          bin="Fridge"
-          items={userData?.items.fridge}
-          handleShow={handleShow}
-        />
-        <Shelf
-          bin="Pantry"
-          items={userData?.items.pantry}
-          handleShow={handleShow}
-        />
-        <Shelf
-          bin="Closet"
-          items={userData?.items.closet}
-          handleShow={handleShow}
-        />
+        <Shelf bin="Freezer" items={binData.freezer} handleShow={handleShow} />
+        <Shelf bin="Fridge" items={binData.fridge} handleShow={handleShow} />
+        <Shelf bin="Pantry" items={binData.pantry} handleShow={handleShow} />
+        <Shelf bin="Closet" items={binData.closet} handleShow={handleShow} />
       </Container>
     </div>
   );

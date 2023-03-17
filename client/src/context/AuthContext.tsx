@@ -13,6 +13,7 @@ import {
   productSearchItem,
 } from "../utilities/interfaces";
 import { useNavigate } from "react-router-dom";
+import YesNoModal from "../components/YesNoModal";
 
 type credentials = {
   email: string;

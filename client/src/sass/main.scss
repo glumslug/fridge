@@ -157,5 +157,43 @@
   border-right: #df5296 1.5px solid;
   background: rgb(34, 34, 34);
 }
+.status-green {
+  background: rgb(94, 163, 81);
+  &:after {
+    position: absolute;
+    transform: translate(2px, -5px);
+    font-weight: 900;
+    content: "✓";
+    color: white;
+  }
+}
+.status-blue {
+  background: rgb(64, 122, 231);
+  &:after {
+    position: absolute;
+    transform: translate(2px, -5px);
+    font-weight: 900;
+    content: "✓";
+    color: white;
+  }
+}
+.status-orange {
+  background: rgb(194, 167, 34);
+  &:after {
+    position: absolute;
+    transform: translate(2px, -5px);
+    font-weight: 900;
+    content: "✓";
+    color: white;
+  }
+}
+.status-grey {
+  background-color: grey;
+}
+.legend {
+  font-size: 12px;
+  margin-left: 2px;
+  margin-right: 15px;
+}
 
 @import "bootstrap/dist/css/bootstrap.min.css";

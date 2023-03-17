@@ -1,11 +1,12 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { ingredient, recipe } from "../utilities/interfaces";
 import Fraction from "fraction.js";
 import { useAuth } from "../context/AuthContext";
 import ProductSearch from "./ProductSearch";
+import YesNoModal from "./YesNoModal";
 
 type RecipeDetailsProps = {
   recipe: recipe;
@@ -13,8 +14,14 @@ type RecipeDetailsProps = {
 };
 type stockItem = {
   product_id: number;
+  name: string;
   amount: number;
-  atHome: boolean;
+  status: string;
+};
+
+type ModalProps = {
+  show: boolean;
+  message: { title: string; body: string };
 };
 const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
   // console.log(recipe);
@@ -24,6 +31,10 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
   const [edit, setEdit] = useState(false);
   const [stock, setStock] = useState<stockItem[] | null>();
   const { userData, bulkCartAdd } = useAuth();
+  const [modal, setModal] = useState<ModalProps>({
+    show: false,
+    message: { title: "", body: "" },
+  });
   const userId = userData?.id;
 
   useEffect(() => {
@@ -35,12 +46,20 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
           if (userData) {
             let arr: stockItem[] = [];
             response.data.map((ingredient: ingredient) => {
+              let st = userData.items.some(
+                (item) => item.product == ingredient.product_id
+              )
+                ? "status-green"
+                : userData.cart.some(
+                    (item) => item.product == ingredient.product_id
+                  )
+                ? "status-blue"
+                : "status-grey";
               arr.push({
                 product_id: ingredient.product_id,
                 amount: ingredient.amount,
-                atHome: userData.items.some(
-                  (item) => item.product == ingredient.product_id
-                ),
+                name: ingredient.name,
+                status: st,
               });
             });
             setStock(arr);
@@ -51,7 +70,7 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
         toast.error(JSON.stringify(error));
       }
     })();
-  }, []);
+  }, [userData]);
 
   const fr = (num: number) => {
     // Convert fractions to unicode -- courtesy Nate Eagle, slightly modded
@@ -68,15 +87,38 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
     return str;
   };
 
-  const handleShop = () => {
+  const handleShop = (add: boolean) => {
     // [[owner, product, quantity]]
     // This is going to mess up if item is already in cart, I should create an upsert,
     // Also should have a feature that shows whats in the cart already in addition to at home
     let arr: number[][] = [];
+    let msg: string[] = [];
     stock?.map((item) => {
-      item.atHome ? null : arr.push([userId, item.product_id, item.amount]);
+      if (item.status == "status-grey") {
+        arr.push([userId, item.product_id, item.amount]);
+        msg.push(item.name);
+      }
     });
-    bulkCartAdd({ values: arr });
+    let bdy = (
+      <ul>
+        {msg.map((m) => {
+          return <li>{m}</li>;
+        })}
+      </ul>
+    );
+    const handleAdd = () => {
+      bulkCartAdd({ values: arr });
+      setModal({ ...modal, show: false });
+    };
+    add
+      ? handleAdd()
+      : msg.length > 0
+      ? setModal({
+          ...modal,
+          show: true,
+          message: { title: "Add items to cart?", body: bdy },
+        })
+      : toast.error("All items already in cart/at home!");
   };
 
   const handleCook = () => {
@@ -85,6 +127,17 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
 
   return (
     <>
+      <YesNoModal
+        show={modal.show}
+        message={modal.message}
+        handleAction={() => handleShop(true)}
+        handleClose={() =>
+          setModal({
+            ...modal,
+            show: false,
+          })
+        }
+      />
       {/* Title */}
       <div
         style={{
@@ -226,10 +279,14 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
                   style={{
                     minWidth: "1rem",
                     minHeight: "1rem",
-                    background: "grey",
                     borderRadius: "3px",
                     border: "1px solid black",
                   }}
+                  className={`${
+                    stock?.find(
+                      (ingredient) => ingredient.product_id == g.product_id
+                    )?.status
+                  }`}
                 ></div>
               </Col>
             </Row>
@@ -237,23 +294,57 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
         })}
       </Container>
       <div
-        className="mt-2 pt-1 d-flex gap-2 w-100 justify-content-end"
+        className="mt-2 pt-1 d-flex w-100 justify-content-between"
         style={{
           borderTop: "2px solid #3960E8",
         }}
       >
-        <div
-          className="rounded my-1 p-1 px-3 text-white bright-orange"
-          onClick={() => handleShop()}
-        >
-          Shop
+        <div className="d-flex align-items-center">
+          <div
+            style={{
+              minWidth: "1rem",
+              minHeight: "1rem",
+              borderRadius: "3px",
+              border: "1px solid black",
+            }}
+            className="status-grey"
+          ></div>
+          <span className="legend"> no stock</span>
+          <div
+            style={{
+              minWidth: "1rem",
+              minHeight: "1rem",
+              borderRadius: "3px",
+              border: "1px solid black",
+            }}
+            className="status-green"
+          ></div>
+          <span className="legend"> at home</span>
+          <div
+            style={{
+              minWidth: "1rem",
+              minHeight: "1rem",
+              borderRadius: "3px",
+              border: "1px solid black",
+            }}
+            className="status-blue"
+          ></div>
+          <span className="legend"> in cart</span>
         </div>
+        <div className="d-flex gap-1">
+          <div
+            className="rounded my-1 p-1 px-3 text-white bright-orange"
+            onClick={() => handleShop()}
+          >
+            Shop
+          </div>
 
-        <div
-          className="rounded my-1 p-1 px-3 text-white bright-submit2"
-          onClick={() => handleCook()}
-        >
-          Cook
+          <div
+            className="rounded my-1 p-1 px-3 text-white bright-submit2"
+            onClick={() => handleCook()}
+          >
+            Cook
+          </div>
         </div>
       </div>
     </>

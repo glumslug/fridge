@@ -70,6 +70,10 @@ type AuthContext = {
     atHome,
     amount,
   }: CRUD) => Promise<Message | undefined>;
+  manageSavedRecipes: (
+    id: number,
+    action: string
+  ) => Promise<Message | undefined>;
 };
 export const AuthContext = createContext({} as AuthContext);
 
@@ -298,6 +302,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
   };
+
+  // Add things to your shopping list in bulk
+  const manageSavedRecipes = async (id: number, action: string) => {
+    console.log(id, action);
+    const add = await axios({
+      url: `/db/savedRecipes/${action}`,
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${userData?.token}`,
+        "Content-Type": "application/json",
+      },
+      data: {
+        id: id,
+      },
+    });
+    if (add.data) {
+      if (add.data.warningStatus == 0) {
+        toast.success(`Recipe ${action}d successfully.`);
+        refreshContext();
+      } else {
+        return { message: "Something went wrong!" };
+      }
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -313,6 +342,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         refreshContext,
         searchProducts,
         upsertItem,
+        manageSavedRecipes,
       }}
     >
       {children}

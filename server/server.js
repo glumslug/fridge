@@ -90,6 +90,32 @@ app.post("/db/upsertItem", (req, res) => {
   });
 });
 
+//Upsert cart item
+app.post("/db/upsertCart", (req, res) => {
+  const { product, owner, quantity } = req.body;
+  const sqlSelect = "CALL upsertCart(?,?,?);";
+  db.query(sqlSelect, [product, owner, quantity], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+//Bulk Upsert Item -- doesn't work!
+app.post("/db/bulkUpsertItem", (req, res) => {
+  const { values } = req.body;
+  const sqlSelect = "CALL upsertItem(?);";
+  db.query(sqlSelect, [values], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 //Add Item
 app.post("/db/add-item", (req, res) => {
   const { product, owner, quantity } = req.body;
@@ -432,6 +458,27 @@ app.get("/db/recipes/:id", async (req, res) => {
     if (err) {
       res.send(err);
     } else {
+      res.send(result);
+    }
+  });
+});
+
+// manage saved Recipe
+app.post("/db/savedRecipes/:action", protect, (req, res) => {
+  const { id } = req.body;
+  const { action } = req.params;
+  const sqlInsert =
+    action === "save"
+      ? "INSERT INTO savedRecipes (user, recipe) VALUES (?,?);"
+      : action === "remove"
+      ? "DELETE FROM savedRecipes WHERE user = ? AND recipe = ?;"
+      : res.send("Please specify action: save or remove");
+  console.log(sqlInsert);
+  db.query(sqlInsert, [req.user, id], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      console.log(result);
       res.send(result);
     }
   });

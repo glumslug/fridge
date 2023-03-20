@@ -11,6 +11,7 @@ import YesNoModal from "./YesNoModal";
 type RecipeDetailsProps = {
   recipe: recipe;
   setView: (arg0: string) => void;
+  myOwn: boolean;
 };
 type stockItem = {
   product_id: number;
@@ -22,19 +23,24 @@ type stockItem = {
 type ModalProps = {
   show: boolean;
   message: { title: string; body: string };
+  action: () => void;
 };
-const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
+
+const emptyModal = {
+  show: false,
+  message: { title: "", body: "" },
+  action: () => alert("Empty"),
+};
+const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
   // console.log(recipe);
   // GET recipe details via axios, select recipes, join ingredients, products, and units?=> shouldn't units just be strings?
   const id = recipe.recipe_id || recipe.id;
   const [recipeDetails, setRecipeDetails] = useState<ingredient[] | null>();
   const [edit, setEdit] = useState(false);
   const [stock, setStock] = useState<stockItem[] | null>();
-  const { userData, bulkCartAdd } = useAuth();
-  const [modal, setModal] = useState<ModalProps>({
-    show: false,
-    message: { title: "", body: "" },
-  });
+  const { userData, bulkCartAdd, manageSavedRecipes } = useAuth();
+  const mySaved = userData?.savedRecipes.some((rec) => rec.id == recipe.id);
+  const [modal, setModal] = useState<ModalProps>(emptyModal);
   const userId = userData?.id;
 
   useEffect(() => {
@@ -117,6 +123,7 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
           ...modal,
           show: true,
           message: { title: "Add items to cart?", body: bdy },
+          action: () => handleShop(true),
         })
       : toast.error("All items already in cart/at home!");
   };
@@ -125,12 +132,50 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
     alert("Bookum");
   };
 
+  const saveRecipe = () => {
+    setModal({
+      show: true,
+      message: {
+        title: "Save recipe?",
+        body: `Save ${recipe.title} to your Saved Recipes list?`,
+      },
+      action: () => handleSave(),
+    });
+  };
+
+  const handleSave = () => {
+    setModal(emptyModal);
+    manageSavedRecipes(id, "save");
+    setView("overview");
+  };
+
+  const removeSaved = () => {
+    setModal({
+      show: true,
+      message: {
+        title: "Remove recipe?",
+        body: `Remove ${recipe.title} from your Saved Recipes list?`,
+      },
+      action: () => handleRemove(),
+    });
+  };
+
+  const handleRemove = () => {
+    setModal(emptyModal);
+    manageSavedRecipes(id, "remove");
+    setView("overview");
+  };
+
+  const modifyRecipe = () => {
+    alert("Convert this to my recipe and modify?");
+  };
+
   return (
     <>
       <YesNoModal
         show={modal.show}
         message={modal.message}
-        handleAction={() => handleShop(true)}
+        handleAction={modal.action}
         handleClose={() =>
           setModal({
             ...modal,
@@ -167,31 +212,57 @@ const RecipeDetails = ({ recipe, setView }: RecipeDetailsProps) => {
           {recipe.title}
         </div>
         {/* Edit button */}
-        <>
-          {edit ? (
-            <div className="d-flex gap-2">
-              <div
-                className="rounded my-1 px-2 text-white bright-cancel"
-                onClick={() => setEdit(false)}
-              >
-                Cancel
+        {myOwn ? (
+          <>
+            {edit ? (
+              <div className="d-flex gap-2">
+                <div
+                  className="rounded my-1 px-2 text-white bright-cancel"
+                  onClick={() => setEdit(false)}
+                >
+                  Cancel
+                </div>
+                <div
+                  className="rounded my-1 px-2 text-white bright-submit"
+                  onClick={() => alert("save it for the judge!")}
+                >
+                  Save
+                </div>
               </div>
+            ) : (
               <div
-                className="rounded my-1 px-2 text-white bright-submit"
-                onClick={() => alert("save it for the judge!")}
+                className="rounded my-1 px-2 text-white bright-orange"
+                onClick={() => setEdit(true)}
+              >
+                Edit
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="d-flex gap-2">
+            <div
+              className="rounded my-1 px-2 text-white bright-orange"
+              onClick={modifyRecipe}
+            >
+              Modify
+            </div>
+            {mySaved ? (
+              <div
+                className="rounded my-1 px-2 text-white bright-orange"
+                onClick={removeSaved}
+              >
+                Remove
+              </div>
+            ) : (
+              <div
+                className="rounded my-1 px-2 text-white bright-orange"
+                onClick={saveRecipe}
               >
                 Save
               </div>
-            </div>
-          ) : (
-            <div
-              className="rounded my-1 px-2 text-white bright-orange"
-              onClick={() => setEdit(true)}
-            >
-              Edit
-            </div>
-          )}
-        </>
+            )}
+          </div>
+        )}
       </div>
       {/* Recipe ingredients */}
       <Container>

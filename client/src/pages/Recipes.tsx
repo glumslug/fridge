@@ -134,7 +134,11 @@ function Recipes() {
           </Row>
         ) : null}
         {view == "details" && selectedRecipe ? (
-          <RecipeDetails recipe={selectedRecipe} setView={setView} />
+          <RecipeDetails
+            recipe={selectedRecipe}
+            setView={setView}
+            myOwn={selectedRecipe.author_id == userData?.id}
+          />
         ) : null}
       </div>
     </>

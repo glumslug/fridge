@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Row } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
+import CreateRecipe from "../components/CreateRecipe";
 import RecipeDetails from "../components/RecipeDetails";
 import RecipeResult from "../components/RecipeResult";
 import RecipeSearch from "../components/RecipeSearch";
@@ -21,7 +22,7 @@ function Recipes() {
 
   // handler for creating new recipe
   const handleNew = () => {
-    alert("New recipe");
+    setView("create");
   };
 
   // handler for selecting recipe, switcheds to recipe details view
@@ -31,9 +32,9 @@ function Recipes() {
   };
   return (
     <>
-      <h1 className="text-white mt-5">{`Recipe${
-        view == "overview" ? "s" : ""
-      }`}</h1>
+      <h1 className="text-white mt-5">{`${
+        view == "create" ? "Create " : ""
+      }Recipe${view == "overview" ? "s" : ""}`}</h1>
       <div
         style={{ gap: "4px", maxWidth: "40rem" }}
         className="d-flex flex-wrap justify-content-between"
@@ -140,6 +141,7 @@ function Recipes() {
             myOwn={selectedRecipe.author_id == userData?.id}
           />
         ) : null}
+        {view == "create" ? <CreateRecipe setView={setView} /> : null}
       </div>
     </>
   );

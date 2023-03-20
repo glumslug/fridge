@@ -4,7 +4,7 @@ import Modal from "react-bootstrap/Modal";
 
 type YesNoModalProps = {
   show: boolean;
-  message: { title: string; body: string };
+  message: { title: string; body: string | JSX.Element };
   handleClose: () => void;
   handleAction: () => void;
 };

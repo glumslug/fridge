@@ -1,11 +1,9 @@
 import axios from "axios";
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { ingredient, recipe } from "../utilities/interfaces";
-import Fraction from "fraction.js";
 import { useAuth } from "../context/AuthContext";
-import ProductSearch from "./ProductSearch";
 import YesNoModal from "./YesNoModal";
 
 type RecipeDetailsProps = {
@@ -13,6 +11,7 @@ type RecipeDetailsProps = {
   setView: (arg0: string) => void;
   myOwn: boolean;
 };
+
 type stockItem = {
   product_id: number;
   name: string;
@@ -22,7 +21,7 @@ type stockItem = {
 
 type ModalProps = {
   show: boolean;
-  message: { title: string; body: string };
+  message: { title: string; body: string | JSX.Element };
   action: () => void;
 };
 
@@ -31,9 +30,8 @@ const emptyModal = {
   message: { title: "", body: "" },
   action: () => alert("Empty"),
 };
+
 const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
-  // console.log(recipe);
-  // GET recipe details via axios, select recipes, join ingredients, products, and units?=> shouldn't units just be strings?
   const id = recipe.recipe_id || recipe.id;
   const [recipeDetails, setRecipeDetails] = useState<ingredient[] | null>();
   const [edit, setEdit] = useState(false);
@@ -43,6 +41,9 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
   const [modal, setModal] = useState<ModalProps>(emptyModal);
   const userId = userData?.id;
 
+  // GET recipe details
+  // PUSH to new array, assign STATUS based on if in cart, home, or none
+  // set the stock variable to this array
   useEffect(() => {
     (async () => {
       try {
@@ -52,7 +53,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
           if (userData) {
             let arr: stockItem[] = [];
             response.data.map((ingredient: ingredient) => {
-              let st = userData.items.some(
+              let status = userData.items.some(
                 (item) => item.product == ingredient.product_id
               )
                 ? "status-green"
@@ -65,7 +66,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
                 product_id: ingredient.product_id,
                 amount: ingredient.amount,
                 name: ingredient.name,
-                status: st,
+                status: status,
               });
             });
             setStock(arr);
@@ -78,8 +79,8 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     })();
   }, [userData]);
 
-  const fr = (num: number) => {
-    // Convert fractions to unicode -- courtesy Nate Eagle, slightly modded
+  // Convert fractions to unicode -- courtesy Nate Eagle, slightly modded
+  const fractionize = (num: number) => {
     let str = num
       .toString()
       .substring(0, 5)
@@ -93,10 +94,11 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     return str;
   };
 
-  const handleShop = (add: boolean) => {
+  // CONFUSING! refactor
+  const handleShop = (add?: boolean) => {
     // [[owner, product, quantity]]
     // This is going to mess up if item is already in cart, I should create an upsert,
-    // Also should have a feature that shows whats in the cart already in addition to at home
+    if (!userId) return;
     let arr: number[][] = [];
     let msg: string[] = [];
     stock?.map((item) => {
@@ -128,10 +130,12 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
       : toast.error("All items already in cart/at home!");
   };
 
+  // dummy function
   const handleCook = () => {
     alert("Bookum");
   };
 
+  // sets modal to save a recipe
   const saveRecipe = () => {
     setModal({
       show: true,
@@ -143,12 +147,14 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     });
   };
 
+  // modal calls this function to save recipe
   const handleSave = () => {
     setModal(emptyModal);
     manageSavedRecipes(id, "save");
     setView("overview");
   };
 
+  // sets modal to remove a recipe
   const removeSaved = () => {
     setModal({
       show: true,
@@ -160,12 +166,14 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     });
   };
 
+  // modal calls this function to remove recipe
   const handleRemove = () => {
     setModal(emptyModal);
     manageSavedRecipes(id, "remove");
     setView("overview");
   };
 
+  // dummy function
   const modifyRecipe = () => {
     alert("Convert this to my recipe and modify?");
   };
@@ -176,14 +184,10 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
         show={modal.show}
         message={modal.message}
         handleAction={modal.action}
-        handleClose={() =>
-          setModal({
-            ...modal,
-            show: false,
-          })
-        }
+        handleClose={() => setModal(emptyModal)}
       />
-      {/* Title */}
+
+      {/* Title Row */}
       <div
         style={{
           borderBottom: "2px solid #3960E8",
@@ -264,7 +268,8 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
           </div>
         )}
       </div>
-      {/* Recipe ingredients */}
+
+      {/* Ingredients List */}
       <Container>
         {/* Header Row */}
         <Row className="mb-2" style={{ fontSize: "13px" }}>
@@ -324,7 +329,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
                     edit ? "bright-nb" : ""
                   }`}
                 >
-                  {`${g.amount == 0 ? "" : fr(g.amount)} ${
+                  {`${g.amount == 0 ? "" : fractionize(g.amount)} ${
                     g.unit_short ||
                     (g.amount > 1 ? g.unit_plural : g.unit_singular)
                   }`}
@@ -364,47 +369,77 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
           );
         })}
       </Container>
+
+      {/* Legend, shop/cook buttons */}
       <div
         className="mt-2 pt-1 d-flex w-100 justify-content-between"
         style={{
           borderTop: "2px solid #3960E8",
         }}
       >
-        <div className="d-flex align-items-center">
-          <div
-            style={{
-              minWidth: "1rem",
-              minHeight: "1rem",
-              borderRadius: "3px",
-              border: "1px solid black",
-            }}
-            className="status-grey"
-          ></div>
-          <span className="legend"> no stock</span>
-          <div
-            style={{
-              minWidth: "1rem",
-              minHeight: "1rem",
-              borderRadius: "3px",
-              border: "1px solid black",
-            }}
-            className="status-green"
-          ></div>
-          <span className="legend"> at home</span>
-          <div
-            style={{
-              minWidth: "1rem",
-              minHeight: "1rem",
-              borderRadius: "3px",
-              border: "1px solid black",
-            }}
-            className="status-blue"
-          ></div>
-          <span className="legend"> in cart</span>
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          {/* No stock */}
+          <div className="d-flex">
+            <div
+              style={{
+                width: "1rem",
+                height: "1rem",
+                borderRadius: "3px",
+                border: "1px solid black",
+              }}
+              className="status-grey"
+            ></div>
+            <span className="legend text-nowrap"> no stock</span>
+          </div>
+          {/* Partial */}
+          <div className="d-flex">
+            <div
+              style={{
+                width: "1rem",
+                height: "1rem",
+                borderRadius: "3px",
+                border: "1px solid black",
+              }}
+              className="status-orange"
+            ></div>
+            <span className="legend text-nowrap"> partial </span>
+          </div>
+          <div className="d-flex gap-2 gap-sm-0 flex-wrap">
+            {/* In Cart */}
+            <div className="d-flex">
+              <div
+                style={{
+                  width: "1rem",
+                  height: "1rem",
+                  borderRadius: "3px",
+                  border: "1px solid black",
+                }}
+                className="status-blue"
+              ></div>
+              <span className="legend text-nowrap"> in cart &#8205;</span>
+            </div>
+
+            {/* At Home */}
+            <div className="d-flex">
+              <div
+                style={{
+                  width: "1rem",
+                  height: "1rem",
+                  borderRadius: "3px",
+                  border: "1px solid black",
+                }}
+                className="status-green"
+              ></div>
+              <span className="legend text-nowrap"> at home </span>
+            </div>
+          </div>
         </div>
+
+        {/* Shop & Cook buttons */}
         <div className="d-flex gap-1">
           <div
             className="rounded my-1 p-1 px-3 text-white bright-orange"
+            style={{ maxHeight: "2.3rem" }}
             onClick={() => handleShop()}
           >
             Shop
@@ -412,6 +447,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
 
           <div
             className="rounded my-1 p-1 px-3 text-white bright-submit2"
+            style={{ maxHeight: "2.3rem" }}
             onClick={() => handleCook()}
           >
             Cook

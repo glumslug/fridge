@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
 app.get("/db/fullContext", protect, (req, res) => {
   const id = req.user;
   const sqlSelect =
-    "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.name, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'author_alias', a.alias)) as 'recipes' from recipes r LEFT join users u on r.author = u.id JOIN authors a on a.id = r.author GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.id, 'author_id', r.author, 'author_name', u.name, 'author_alias', a.alias,'cuisine', r.cuisine, 'title', r.name, 'recipe_id', sr.recipe )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on u.id = a.user group by sr.user having sr.user = ?";
+    "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.title, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'author_alias', a.alias)) as 'recipes' from recipes r LEFT join users u on r.author = u.id JOIN authors a on a.id = r.author GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.id, 'author_id', r.author, 'author_name', u.name, 'author_alias', a.alias,'cuisine', r.cuisine, 'title', r.title, 'recipe_id', sr.recipe )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on u.id = a.user group by sr.user having sr.user = ?";
   db.query(sqlSelect, [id, id, id, id], (err, result) => {
     if (err) {
       res.status(400);
@@ -103,11 +103,11 @@ app.post("/db/upsertCart", (req, res) => {
   });
 });
 
-//Bulk Upsert Item -- doesn't work!
-app.post("/db/bulkUpsertItem", (req, res) => {
-  const { values } = req.body;
-  const sqlSelect = "CALL upsertItem(?);";
-  db.query(sqlSelect, [values], (err, result) => {
+//downsert fridge item
+app.post("/db/downsertItem", protect, (req, res) => {
+  const { product, quantity } = req.body;
+  const sqlSelect = "CALL downsertItem(?,?,?);";
+  db.query(sqlSelect, [product, req.user, quantity], (err, result) => {
     if (err) {
       res.send(err);
     } else {
@@ -116,7 +116,7 @@ app.post("/db/bulkUpsertItem", (req, res) => {
   });
 });
 
-//Add Item
+//Add Item STILL USING???
 app.post("/db/add-item", (req, res) => {
   const { product, owner, quantity } = req.body;
   const sqlInsert =
@@ -130,7 +130,7 @@ app.post("/db/add-item", (req, res) => {
   });
 });
 
-//Update item quantity
+//Update item quantity STILL USING???
 app.post("/db/update-item-quantity", (req, res) => {
   const { product, owner, quantity } = req.body;
   const sqlInsert =
@@ -144,7 +144,7 @@ app.post("/db/update-item-quantity", (req, res) => {
   });
 });
 
-//Add cart_item
+//Add cart_item STILL USING???
 app.post("/db/cart/add", protect, (req, res) => {
   const { product, quantity } = req.body;
   const sqlInsert =
@@ -158,7 +158,7 @@ app.post("/db/cart/add", protect, (req, res) => {
   });
 });
 
-//Add multiple cart_item
+//Add multiple cart_item STILL USING???
 app.post("/db/cart/bulkAdd", protect, (req, res) => {
   const { values } = req.body;
   const sqlInsert = "insert into cart (owner, product, quantity) values ?;";
@@ -171,7 +171,7 @@ app.post("/db/cart/bulkAdd", protect, (req, res) => {
   });
 });
 
-//Update cart_item
+//Update cart_item STILL USING???
 app.post("/db/cart/update", protect, (req, res) => {
   const { product, quantity } = req.body;
   const sqlUpdate =
@@ -185,7 +185,7 @@ app.post("/db/cart/update", protect, (req, res) => {
   });
 });
 
-//Update cart_item
+//Update cart_item STILL USING???
 app.post("/db/cart/remove", protect, (req, res) => {
   const { product, quantity } = req.body;
   const sqlDelete = "DELETE FROM cart WHERE owner = ? AND product = ?;";
@@ -198,33 +198,7 @@ app.post("/db/cart/remove", protect, (req, res) => {
   });
 });
 
-//Get foodgroups
-app.get("/db/foodgroups", (req, res) => {
-  const sqlSelect =
-    "SELECT json_arrayagg(foodgroup) AS foodgroups FROM (SELECT DISTINCT foodgroup from foods) a;";
-  db.query(sqlSelect, (err, result) => {
-    if (err) {
-      res.send(err);
-    } else {
-      res.send(result);
-    }
-  });
-});
-
-//Get food by foodgroup
-app.get("/db/food-by-group", (req, res) => {
-  const sqlSelect =
-    "SELECT foodgroup, COUNT(name) as quantity, json_arrayagg(name) as 'foods' FROM foods GROUP BY foodgroup ORDER BY quantity DESC;";
-  db.query(sqlSelect, (err, result) => {
-    if (err) {
-      res.send(err);
-    } else {
-      res.send(result);
-    }
-  });
-});
-
-//Get all? products
+//Get all? products STILL USING???
 app.get("/db/products", (req, res) => {
   const sqlSelect =
     "SELECT foodgroup, COUNT(name) as quantity, json_arrayagg(name) as 'foods' FROM foods GROUP BY foodgroup ORDER BY quantity DESC;";
@@ -237,19 +211,7 @@ app.get("/db/products", (req, res) => {
   });
 });
 
-//Get items in foodgroup
-app.post("/db/food", (req, res) => {
-  const { foodgroup } = req.body;
-  const sqlSelect = "SELECT name FROM foods WHERE foodgroup = ?";
-  db.query(sqlSelect, [foodgroup], (err, result) => {
-    if (err) {
-      res.send(err);
-    } else {
-      res.send(result);
-    }
-  });
-});
-
+// What is this? STILL USING???
 app.get("/db/shoppingList", protect, (req, res) => {
   const sqlSelect =
     "select JSON_ARRAYAGG(JSON_OBJECT('product', p.name, 'product_id', p.id, 'bin', p.bin, 'quantity', li.quantity)) as 'cart' from lists l join list_items li on l.id = li.list join products p on li.product = p.id GROUP BY l.owner HAVING l.owner = ?;";
@@ -272,57 +234,6 @@ app.get("/db/shoppingList", protect, (req, res) => {
   });
 });
 
-//Login a user OLD
-app.post("/db/loginOLD", (req, res) => {
-  const { email, password } = req.body;
-  if (!email) {
-    res.send("Please type your email!");
-  }
-  if (!password) {
-    res.send("Please type your password!");
-  }
-
-  const sqlSelect =
-    "SELECT u.email as email, 'user', json_object('password', u.password, 'id', u.id, 'email', u.email, 'name', u.name) as 'contents' from users u where u.email = ? UNION SELECT u.email as email, 'items', JSON_ARRAYAGG(JSON_OBJECT('bin', p.bin, 'product', p.id, 'name', p.name, 'quantity', i.quantity)) AS 'items' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.email = ? UNION select u.email as email, 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id,'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c join products p on c.product = p.id join users u on c.owner = u.id GROUP BY u.id HAVING u.email = ?;";
-  db.query(sqlSelect, [email, email, email], async (err, result) => {
-    if (err) {
-      res.send(err);
-    } else {
-      const user = result[0].contents;
-      const items = result[1]?.contents || [];
-      const cart = result[2]?.contents || [];
-
-      if (!user) {
-        res.status(400);
-        res.send("User doesn't exist!");
-      } else {
-        if (await bcrypt.compare(password, user.password)) {
-          res.send({
-            id: user.id,
-            name: user.name,
-            token: generateToken(user.id),
-            items: {
-              freezer: items.filter((item) => item.bin == "freezer"),
-              fridge: items.filter((item) => item.bin == "fridge"),
-              pantry: items.filter((item) => item.bin == "pantry"),
-              closet: items.filter((item) => item.bin == "closet"),
-            },
-            cart: {
-              freezer: cart.filter((item) => item.bin == "freezer"),
-              fridge: cart.filter((item) => item.bin == "fridge"),
-              pantry: cart.filter((item) => item.bin == "pantry"),
-              closet: cart.filter((item) => item.bin == "closet"),
-            },
-          });
-        } else {
-          res.status(400);
-          res.send("Email and password don't match!");
-        }
-      }
-    }
-  });
-});
-
 //Login a user
 app.post("/db/login", (req, res) => {
   const { email, password } = req.body;
@@ -340,7 +251,7 @@ app.post("/db/login", (req, res) => {
         if (await bcrypt.compare(password, user.password)) {
           const id = user.id;
           const sqlSelect2 =
-            "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.name, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'author_alias', a.alias)) as 'recipes' from recipes r LEFT join users u on r.author = u.id JOIN authors a on a.id = r.author GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.id, 'author_id', r.author, 'author_name', u.name, 'author_alias', a.alias,'cuisine', r.cuisine, 'title', r.name, 'recipe_id', sr.recipe )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on u.id = a.user group by sr.user having sr.user = ?";
+            "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.title, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'author_alias', a.alias)) as 'recipes' from recipes r LEFT join users u on r.author = u.id JOIN authors a on a.id = r.author GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.id, 'author_id', r.author, 'author_name', u.name, 'author_alias', a.alias,'cuisine', r.cuisine, 'title', r.title, 'recipe_id', sr.recipe )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on u.id = a.user group by sr.user having sr.user = ?";
           db.query(sqlSelect2, [id, id, id, id], (err, result) => {
             if (err) {
               res.status(400);
@@ -439,7 +350,7 @@ app.post("/db/recipes", async (req, res) => {
   const { search } = req.body;
   const reg = "^" + search;
   const sqlQuery =
-    "SELECT r.id as id, r.name as title, r.cuisine as cuisine, u.name as author_name, r.author as author_id, a.alias as author_alias from recipes r LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on a.user = u.id WHERE r.name REGEXP ?;";
+    "SELECT r.id as id, r.title as title, r.cuisine as cuisine, u.name as author_name, r.author as author_id, a.alias as author_alias from recipes r LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on a.user = u.id WHERE r.title REGEXP ?;";
   db.query(sqlQuery, [reg], (err, result) => {
     if (err) {
       res.send(err);

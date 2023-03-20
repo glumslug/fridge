@@ -11,6 +11,7 @@ import {
   userData,
   basketData,
   productSearchItem,
+  basketItem,
 } from "../utilities/interfaces";
 import { useNavigate } from "react-router-dom";
 import YesNoModal from "../components/YesNoModal";
@@ -65,11 +66,7 @@ type AuthContext = {
   bulkCartAdd: ({ values }: bulkAddProps) => Promise<Message | undefined>;
   manageBasket: ({ product, amount, action }: CRUD) => void;
   upsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
-  manageItems: ({
-    product,
-    atHome,
-    amount,
-  }: CRUD) => Promise<Message | undefined>;
+  downsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
   manageSavedRecipes: (
     id: number,
     action: string
@@ -87,8 +84,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const navigate = useNavigate();
   //Get context from localstorage on page refresh
   useEffect(() => {
-    setUserData(JSON.parse(localStorage.getItem("user")));
-    setBasketData(JSON.parse(localStorage.getItem("basket")));
+    const user = localStorage.getItem("user");
+    const basket = localStorage.getItem("basket");
+    user ? setUserData(JSON.parse(user)) : null;
+    basket ? setBasketData(JSON.parse(basket)) : null;
   }, []);
   const refreshContext = async (action?: string) => {
     const response = await axios({
@@ -175,19 +174,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     navigate(0);
   };
 
-  const manageItems = async ({ product, atHome, amount }: CRUD) => {
-    const add = await axios.post(
-      `/db/${atHome + amount == 0 ? "delete-item" : "update-item-quantity"}`,
-      {
+  // downsert item -- for use/toss items in home tab
+  const downsertItem = async ({ product, amount }: CRUD) => {
+    const add = await axios({
+      url: "/db/downsertItem",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${userData?.token}`,
+        "Content-Type": "application/json",
+      },
+      data: {
         product: product,
-        owner: userData?.id,
         quantity: amount,
-      }
-    );
-    console.log(product);
+      },
+    });
+
     if (add.data) {
       if (add.data.warningStatus == 0) {
         refreshContext();
+        return { message: "Success!" };
       } else {
         return { message: "Something went wrong!" };
       }
@@ -247,8 +252,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const manageBasket = ({ product, amount, action }: CRUD) => {
     // This is for when you're shopping, adding things to your purchase order
-    const basket = JSON.parse(localStorage.getItem("basket")) || { items: [] };
-    let index = basket.items.findIndex((item) => item.product == product);
+    const localBasket = localStorage.getItem("basket");
+    const basket = localBasket ? JSON.parse(localBasket) : { items: [] };
+    let index = basket.items.findIndex(
+      (item: basketItem) => item.product == product
+    );
     console.log(action);
     switch (action) {
       case "add":
@@ -338,7 +346,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         manageCart,
         bulkCartAdd,
         manageBasket,
-        manageItems,
+        downsertItem,
         refreshContext,
         searchProducts,
         upsertItem,

@@ -9,7 +9,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Home = () => {
-  const { userData, manageItems } = useAuth();
+  const { userData, downsertItem } = useAuth();
   const binData = {
     freezer: userData?.items.filter((item) => item.bin == "freezer"),
     fridge: userData?.items.filter((item) => item.bin == "fridge"),
@@ -46,10 +46,9 @@ const Home = () => {
     }
     handleClose();
 
-    const result = await manageItems({
+    const result = await downsertItem({
       product: selectedItem.product,
-      atHome: atHome,
-      amount: -Math.abs(amount),
+      amount: amount,
     });
     if (result?.message) {
       toast.success(result.message);

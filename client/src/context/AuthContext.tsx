@@ -29,6 +29,12 @@ type CRUD = {
   action?: string;
 };
 
+type CreateRecipe = {
+  title: string;
+  cuisine: number | null;
+  source: number | null;
+};
+
 type bulkAddProps = {
   values: number[][];
 };
@@ -67,6 +73,11 @@ type AuthContext = {
   manageBasket: ({ product, amount, action }: CRUD) => void;
   upsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
   downsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
+  createRecipe: ({
+    title,
+    cuisine,
+    source,
+  }: CreateRecipe) => Promise<Message | undefined>;
   manageSavedRecipes: (
     id: number,
     action: string
@@ -335,6 +346,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  //create recipe
+  const createRecipe = async ({ title, cuisine, source }: CreateRecipe) => {
+    // action is add, remove, or update
+    const add = await axios({
+      url: "/db/recipes/create",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${userData?.token}`,
+        "Content-Type": "application/json",
+      },
+      data: {
+        title,
+        cuisine,
+        source,
+      },
+    });
+    if (add.data) {
+      if (add.data.warningStatus == 0) {
+        toast.success("Recipe created!.");
+        refreshContext();
+      } else {
+        return { message: "Something went wrong!" };
+      }
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -351,6 +388,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         searchProducts,
         upsertItem,
         manageSavedRecipes,
+        createRecipe,
       }}
     >
       {children}

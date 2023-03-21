@@ -1,4 +1,4 @@
-import express from "express";
+import express, { response } from "express";
 import mysql2 from "mysql2";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -251,7 +251,7 @@ app.post("/db/login", (req, res) => {
         if (await bcrypt.compare(password, user.password)) {
           const id = user.id;
           const sqlSelect2 =
-            "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.title, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'source', s.name)) as 'recipes' from recipes r LEFT join users u on r.author = u.id LEFT JOIN sources s on s.id = r.source GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.recipe, 'author_id', r.author, 'author_name', u.name, 'source', s.name,'cuisine', r.cuisine, 'title', r.title )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN sources s on r.source = s.id LEFT JOIN users u on u.id = r.author group by sr.user having sr.user = ?;";
+            "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.title, 'cuisine', c.name, 'author_name', u.name, 'author_id', r.author, 'source', s.name)) as 'recipes' from recipes r LEFT join users u on r.author = u.id LEFT JOIN sources s on s.id = r.source LEFT JOIN cuisines c on c.id = r.cuisine GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.recipe, 'author_id', r.author, 'author_name', u.name, 'source', s.name,'cuisine', c.name, 'title', r.title)) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN sources s on r.source = s.id LEFT JOIN users u on u.id = r.author LEFT JOIN cuisines c on c.id = r.cuisine group by sr.user having sr.user = ?;";
           db.query(sqlSelect2, [id, id, id, id], (err, result) => {
             if (err) {
               res.status(400);
@@ -360,6 +360,20 @@ app.post("/db/recipes", async (req, res) => {
   });
 });
 
+// search sources
+app.post("/db/sources", async (req, res) => {
+  const { search } = req.body;
+  const reg = "^" + search;
+  const sqlQuery = "SELECT * FROM sources WHERE name REGEXP ?;";
+  db.query(sqlQuery, [reg], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 // get recipe details
 app.get("/db/recipes/:id", async (req, res) => {
   const { id } = req.params;
@@ -413,6 +427,18 @@ app.post("/db/recipes/create", protect, (req, res) => {
       }
     }
   );
+});
+
+// get cuisine list
+app.get("/db/cuisines", (req, res) => {
+  const sqlSelect = "SELECT * FROM cuisines;";
+  db.query(sqlSelect, (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
 });
 
 // Generate JWT

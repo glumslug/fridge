@@ -129,6 +129,13 @@
   }
 }
 
+.cuisine-btn {
+  color: #df5296;
+  &:hover {
+    color: #8bf0d0;
+  }
+}
+
 .button-un {
   all: unset;
 }

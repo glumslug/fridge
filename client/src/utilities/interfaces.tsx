@@ -85,3 +85,13 @@ export interface ingredient {
   unit_singular: string;
   unit_plural: string;
 }
+
+export interface cuisines {
+  id: number;
+  name: string;
+}
+
+export interface sources {
+  id: number;
+  name: string;
+}

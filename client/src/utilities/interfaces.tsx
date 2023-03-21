@@ -71,18 +71,9 @@ export interface recipe {
   id: number;
   title: string;
   cuisine: string;
-  author_id: number;
+  author_id: number | null;
   author_name: string | null;
-  author_alias: string | null;
-  recipe_id?: number;
-}
-
-export interface recipeSearchItem {
-  id: number;
-  name: string;
-  author: string | null;
-  alias: string | null;
-  cuisine: string;
+  source: string | null;
 }
 
 export interface ingredient {

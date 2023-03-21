@@ -32,7 +32,7 @@ const emptyModal = {
 };
 
 const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
-  const id = recipe.recipe_id || recipe.id;
+  const id = recipe.id;
   const [recipeDetails, setRecipeDetails] = useState<ingredient[] | null>();
   const [edit, setEdit] = useState(false);
   const [stock, setStock] = useState<stockItem[] | null>();

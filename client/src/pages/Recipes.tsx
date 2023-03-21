@@ -7,7 +7,7 @@ import RecipeDetails from "../components/RecipeDetails";
 import RecipeResult from "../components/RecipeResult";
 import RecipeSearch from "../components/RecipeSearch";
 import { useAuth } from "../context/AuthContext";
-import { recipe, recipeSearchItem } from "../utilities/interfaces";
+import { recipe } from "../utilities/interfaces";
 
 function Recipes() {
   // Recipe search and select page, options to filter, search, add new
@@ -98,7 +98,7 @@ function Recipes() {
                 <RecipeResult
                   handleSelect={handleSelect}
                   result={sav}
-                  key={sav.recipe_id}
+                  key={sav.id}
                 />
               );
             })}

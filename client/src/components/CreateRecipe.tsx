@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { recipe } from "../utilities/interfaces";
 
 type CreateRecipeProps = {
   setView: (arg0: string) => void;
@@ -17,6 +18,7 @@ const CreateRecipe = ({ setView }: CreateRecipeProps) => {
   // Source should query authors, but only those with aliases. use regex or string-similarity package to see if close to something already in the db
   // If no matching source is found, they can hit +, which will INSERT into authors db as alias
   const [step, setStep] = useState<1 | 2>(1);
+  const [recipe, setRecipe] = useState<recipe | null>(null);
   const [form, setForm] = useState<CreateRecipeForm>({
     title: null,
     cuisine: null,

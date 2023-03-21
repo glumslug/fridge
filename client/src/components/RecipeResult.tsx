@@ -23,7 +23,7 @@ const RecipeResult = ({ result, handleSelect }: RecipeResultProps) => {
           style={{ width: "auto", background: "#AB6969" }}
           className="d-flex align-items-center text-center rounded px-1"
         >
-          {result.author_name ? result.author_name : result.author_alias}
+          {result.author_name ? result.author_name : result.source}
         </div>
 
         <div

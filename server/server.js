@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
 app.get("/db/fullContext", protect, (req, res) => {
   const id = req.user;
   const sqlSelect =
-    "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.title, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'author_alias', a.alias)) as 'recipes' from recipes r LEFT join users u on r.author = u.id JOIN authors a on a.id = r.author GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.id, 'author_id', r.author, 'author_name', u.name, 'author_alias', a.alias,'cuisine', r.cuisine, 'title', r.title, 'recipe_id', sr.recipe )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on u.id = a.user group by sr.user having sr.user = ?";
+    "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.title, 'cuisine', c.name, 'author_name', u.name, 'author_id', r.author, 'source', s.name)) as 'recipes' from recipes r LEFT join users u on r.author = u.id LEFT JOIN sources s on s.id = r.source LEFT JOIN cuisines c on c.id = r.cuisine GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.recipe, 'author_id', r.author, 'author_name', u.name, 'source', s.name,'cuisine', c.name, 'title', r.title)) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN sources s on r.source = s.id LEFT JOIN users u on u.id = r.author LEFT JOIN cuisines c on c.id = r.cuisine group by sr.user having sr.user = ?;";
   db.query(sqlSelect, [id, id, id, id], (err, result) => {
     if (err) {
       res.status(400);
@@ -251,7 +251,7 @@ app.post("/db/login", (req, res) => {
         if (await bcrypt.compare(password, user.password)) {
           const id = user.id;
           const sqlSelect2 =
-            "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.title, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'author_alias', a.alias)) as 'recipes' from recipes r LEFT join users u on r.author = u.id JOIN authors a on a.id = r.author GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.id, 'author_id', r.author, 'author_name', u.name, 'author_alias', a.alias,'cuisine', r.cuisine, 'title', r.title, 'recipe_id', sr.recipe )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on u.id = a.user group by sr.user having sr.user = ?";
+            "SELECT 'items', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'bin', p.bin, 'id', i.id, 'name', p.name, 'quantity', i.quantity)) AS 'contents' from users u LEFT JOIN items i on u.id = i.owner LEFT JOIN products p on p.id = i.product GROUP BY u.id HAVING u.id = ? UNION select 'cart', JSON_ARRAYAGG(JSON_OBJECT('product', p.id, 'name', p.name, 'bin', p.bin, 'quantity', c.quantity)) as 'cart' from cart c LEFT join products p on c.product = p.id LEFT join users u on c.owner = u.id GROUP BY u.id HAVING u.id = ? UNION select 'myRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', r.id, 'title', r.title, 'cuisine', r.cuisine, 'author_name', u.name, 'author_id', r.author, 'source', s.name)) as 'recipes' from recipes r LEFT join users u on r.author = u.id LEFT JOIN sources s on s.id = r.source GROUP by u.id HAVING u.id = ? UNION SELECT 'savedRecipes', JSON_ARRAYAGG(JSON_OBJECT('id', sr.recipe, 'author_id', r.author, 'author_name', u.name, 'source', s.name,'cuisine', r.cuisine, 'title', r.title )) as 'savedRecipes' from savedRecipes sr left join recipes r on sr.recipe = r.id LEFT JOIN sources s on r.source = s.id LEFT JOIN users u on u.id = r.author group by sr.user having sr.user = ?;";
           db.query(sqlSelect2, [id, id, id, id], (err, result) => {
             if (err) {
               res.status(400);
@@ -350,7 +350,7 @@ app.post("/db/recipes", async (req, res) => {
   const { search } = req.body;
   const reg = "^" + search;
   const sqlQuery =
-    "SELECT r.id as id, r.title as title, r.cuisine as cuisine, u.name as author_name, r.author as author_id, a.alias as author_alias from recipes r LEFT JOIN authors a on r.author = a.id LEFT JOIN users u on a.user = u.id WHERE r.title REGEXP ?;";
+    "SELECT r.id as id, r.title as title, c.name as cuisine, u.name as author_name, r.author as author_id, s.name as source from recipes r LEFT JOIN sources s on r.source = s.id LEFT JOIN users u on r.author = u.id LEFT JOIN cuisines c on c.id = r.cuisine WHERE r.title REGEXP ?;";
   db.query(sqlQuery, [reg], (err, result) => {
     if (err) {
       res.send(err);
@@ -393,6 +393,26 @@ app.post("/db/savedRecipes/:action", protect, (req, res) => {
       res.send(result);
     }
   });
+});
+
+// create recipe
+app.post("/db/recipes/create", protect, (req, res) => {
+  const { title, cuisine, source } = req.body;
+  const sqlInsert =
+    "INSERT INTO recipes (title, cuisine, author, source) VALUES (?,?,?,?)";
+  console.log(sqlInsert);
+  db.query(
+    sqlInsert,
+    [title, cuisine || 9, source ? null : req.user, source || null],
+    (err, result) => {
+      if (err) {
+        res.send(err);
+      } else {
+        console.log(result);
+        res.send(result);
+      }
+    }
+  );
 });
 
 // Generate JWT

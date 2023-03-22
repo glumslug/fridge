@@ -378,7 +378,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       toast.success("Recipe created!");
       refreshContext();
       console.log(add.data);
-      return { data: add.data };
+      return { data: add.data[0] };
     } else {
       return { message: "Something went wrong!" };
     }

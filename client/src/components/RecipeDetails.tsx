@@ -18,16 +18,19 @@ type stockItem = {
   amount: number;
   status: string;
 };
-
+type BodyUl = { name: string; amount: number };
 type ModalProps = {
   show: boolean;
-  message: { title: string; body: string | JSX.Element };
+  message: {
+    title: string;
+    body: { pre?: string; span?: string; post?: string; ul?: BodyUl[] };
+  };
   action: () => void;
 };
 
 const emptyModal = {
   show: false,
-  message: { title: "", body: "" },
+  message: { title: "", body: { pre: "", span: "", post: "" } },
   action: () => alert("Empty"),
 };
 
@@ -70,7 +73,6 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
               });
             });
             setStock(arr);
-            console.log(arr);
           }
         }
       } catch (error) {
@@ -100,31 +102,24 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     // This is going to mess up if item is already in cart, I should create an upsert,
     if (!userId) return;
     let arr: number[][] = [];
-    let msg: string[] = [];
+    let body: BodyUl[] = [];
     stock?.map((item) => {
       if (item.status == "status-grey") {
         arr.push([userId, item.product_id, item.amount]);
-        msg.push(item.name);
+        body.push({ name: item.name, amount: item.amount });
       }
     });
-    let bdy = (
-      <ul>
-        {msg.map((m) => {
-          return <li>{m}</li>;
-        })}
-      </ul>
-    );
     const handleAdd = () => {
       bulkCartAdd({ values: arr });
       setModal({ ...modal, show: false });
     };
     add
       ? handleAdd()
-      : msg.length > 0
+      : body.length > 0
       ? setModal({
           ...modal,
           show: true,
-          message: { title: "Add items to cart?", body: bdy },
+          message: { title: "Add items to cart?", body: { ul: body } },
           action: () => handleShop(true),
         })
       : toast.error("All items already in cart/at home!");
@@ -141,7 +136,11 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
       show: true,
       message: {
         title: "Save recipe?",
-        body: `Save ${recipe.title} to your Saved Recipes list?`,
+        body: {
+          pre: "Save ",
+          span: recipe.title,
+          post: " to your Saved Recipes list?",
+        },
       },
       action: () => handleSave(),
     });
@@ -160,7 +159,11 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
       show: true,
       message: {
         title: "Remove recipe?",
-        body: `Remove ${recipe.title} from your Saved Recipes list?`,
+        body: {
+          pre: "Remove ",
+          span: recipe.title,
+          post: " from your Saved Recipes list?",
+        },
       },
       action: () => handleRemove(),
     });
@@ -180,6 +183,20 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
 
   //delete a recipe
   const handleDeleteRecipe = async () => {
+    setModal({
+      show: true,
+      message: {
+        title: "Delete recipe?",
+        body: {
+          pre: "Delete ",
+          span: recipe.title,
+          post: " forever?",
+        },
+      },
+      action: () => executeDeleteRecipe(),
+    });
+  };
+  const executeDeleteRecipe = async () => {
     const del = await deleteRecipe(id);
     if (del) {
       setView("overview");
@@ -231,11 +248,18 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
             {edit ? (
               <div className="d-flex gap-2">
                 <div
+                  className="rounded my-1 px-2 text-white bright-orange"
+                  onClick={() => handleDeleteRecipe()}
+                >
+                  Delete
+                </div>
+                <div
                   className="rounded my-1 px-2 text-white bright-cancel"
                   onClick={() => setEdit(false)}
                 >
                   Cancel
                 </div>
+
                 <div
                   className="rounded my-1 px-2 text-white bright-submit"
                   onClick={() => alert("save it for the judge!")}
@@ -244,19 +268,11 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
                 </div>
               </div>
             ) : (
-              <div className="d-flex gap-2">
-                <div
-                  className="rounded my-1 px-2 text-white border border-danger"
-                  onClick={() => handleDeleteRecipe()}
-                >
-                  Delete
-                </div>
-                <div
-                  className="rounded my-1 px-2 text-white bright-orange"
-                  onClick={() => setEdit(true)}
-                >
-                  Edit
-                </div>
+              <div
+                className="rounded my-1 px-2 text-white bright-orange"
+                onClick={() => setEdit(true)}
+              >
+                Edit
               </div>
             )}
           </>

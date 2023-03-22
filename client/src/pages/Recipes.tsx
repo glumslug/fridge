@@ -141,7 +141,12 @@ function Recipes() {
             myOwn={selectedRecipe.author_id == userData?.id}
           />
         ) : null}
-        {view == "create" ? <CreateRecipe setView={setView} /> : null}
+        {view == "create" ? (
+          <CreateRecipe
+            setView={setView}
+            setSelectedRecipe={setSelectedRecipe}
+          />
+        ) : null}
       </div>
     </>
   );

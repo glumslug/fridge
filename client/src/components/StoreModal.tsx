@@ -22,9 +22,9 @@ const StoreModal = ({
   amount,
 }: StoreModalProps) => {
   const [initial, setInitial] = useState<number>(amount);
-  useEffect(() => {
-    console.log(amount, initial);
-  }, [amount]);
+  // useEffect(() => {
+  //   console.log(amount, initial);
+  // }, [amount]);
 
   return (
     <>

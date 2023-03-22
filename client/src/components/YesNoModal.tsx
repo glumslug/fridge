@@ -2,9 +2,13 @@ import React, { useEffect, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
+type BodyUl = { name: string; amount: number };
 type YesNoModalProps = {
   show: boolean;
-  message: { title: string; body: string | JSX.Element };
+  message: {
+    title: string;
+    body: { pre?: string; span?: string; post?: string; ul?: BodyUl[] };
+  };
   handleClose: () => void;
   handleAction: () => void;
 };
@@ -24,8 +28,19 @@ const YesNoModal = ({
         >
           <Modal.Title>{message.title}</Modal.Title>
         </Modal.Header>
-        <Modal.Body className=" modal-active d-flex flex-column">
-          {message.body}
+        <Modal.Body className=" modal-active">
+          {message.body.pre}
+          <span className="spanYN">{message.body.span}</span>
+          {message.body.post}
+          <ul>
+            {message.body.ul?.map((m) => {
+              return (
+                <li key={m.name}>
+                  <span className="spanYN">{m.amount}x</span> {m.name}
+                </li>
+              );
+            })}
+          </ul>
         </Modal.Body>
         <Modal.Footer
           className="bg-black bright-active"

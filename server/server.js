@@ -422,7 +422,8 @@ app.post("/db/recipes/create", protect, (req, res) => {
         console.log(err);
         res.send(err);
       } else {
-        const sqlSelect = "SELECT * FROM recipes WHERE id = ?;";
+        const sqlSelect =
+          "SELECT r.id as id, r.title as title, c.name as cuisine, r.author as author_id, u.name as author_name, s.name as source from recipes r join cuisines c on c.id = r.cuisine left join sources s on s.id = r.source left join users u on u.id = r.author WHERE r.id = ?;";
         db.query(sqlSelect, [result.insertId], (err2, result2) => {
           if (err2) {
             console.log(err2);

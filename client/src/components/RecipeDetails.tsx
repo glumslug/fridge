@@ -2,9 +2,10 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { toast } from "react-toastify";
-import { ingredient, recipe } from "../utilities/interfaces";
+import { ingredient, productSearchItem, recipe } from "../utilities/interfaces";
 import { useAuth } from "../context/AuthContext";
 import YesNoModal from "./YesNoModal";
+import IngredientSearch from "./IngredientSearch";
 
 type RecipeDetailsProps = {
   recipe: recipe;
@@ -17,6 +18,12 @@ type stockItem = {
   name: string;
   amount: number;
   status: string;
+};
+
+type newIngredient = {
+  product_id: number;
+  name: string;
+  amount: number;
 };
 type BodyUl = { name: string; amount: number };
 type ModalProps = {
@@ -42,6 +49,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
   const { userData, bulkCartAdd, manageSavedRecipes, deleteRecipe } = useAuth();
   const mySaved = userData?.savedRecipes.some((rec) => rec.id == recipe.id);
   const [modal, setModal] = useState<ModalProps>(emptyModal);
+  const [newIngredients, setNewIngredients] = useState<newIngredient[]>([]);
   const userId = userData?.id;
 
   // GET recipe details
@@ -205,6 +213,19 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     }
   };
 
+  // add an ingredient
+  const handleAddIngredient = (result: productSearchItem) => {
+    newIngredients.push({
+      product_id: result.product,
+      name: result.name,
+      amount: 1,
+    });
+  };
+
+  const handleSaveEdits = () => {
+    alert("Save edits");
+  };
+
   return (
     <>
       <YesNoModal
@@ -262,7 +283,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
 
                 <div
                   className="rounded my-1 px-2 text-white bright-submit"
-                  onClick={() => alert("save it for the judge!")}
+                  onClick={() => handleSaveEdits()}
                 >
                   Save
                 </div>
@@ -304,35 +325,45 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
       </div>
 
       {/* Ingredients List */}
-      <Container>
+      <Container className="me-2">
         {/* Header Row */}
-        <Row className="mb-2" style={{ fontSize: "13px" }}>
-          <Col
-            xs="6"
-            className="d-flex align-items-center justify-content-start"
-          >
-            Ingredient
-          </Col>
-          <Col
-            xs="5"
-            className="d-flex align-items-center justify-content-center"
-          >
-            Amount
-          </Col>
+        {recipeDetails?.length !== 0 ? (
+          <Row className="g-0 mb-2" style={{ fontSize: "13px" }}>
+            <Col
+              xs="6"
+              className="px-2 d-flex align-items-center justify-content-start"
+            >
+              Ingredient
+            </Col>
+            <Col
+              xs={edit ? "3" : "5"}
+              className="d-flex align-items-center justify-content-center"
+            >
+              Amount
+            </Col>
 
-          <Col
-            xs="1"
-            className="d-flex align-items-center justify-content-center"
+            <Col
+              xs={edit ? "3" : "1"}
+              className="d-flex align-items-center justify-content-center"
+            >
+              {edit ? "Unit" : "Status"}
+            </Col>
+          </Row>
+        ) : !edit ? (
+          <div
+            className="w-100 d-flex justify-content-center"
+            style={{ fontStyle: "italic" }}
           >
-            Status
-          </Col>
-        </Row>
-        {/* Search bar - only in edit mode */}
+            Click "Edit" to add ingredients.
+          </div>
+        ) : null}
+
         {/* {edit ? <IngredientSearch handleAdd={handleAdd}/> : null} */}
         {/* Ingredients */}
+
         {recipeDetails?.map((g: ingredient) => {
           return (
-            <Row className="d-flex mb-1" key={g.ingredient_id}>
+            <Row className="g-0 d-flex mb-1" key={g.ingredient_id}>
               {/* Title */}
               <Col
                 style={{
@@ -350,7 +381,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
               </Col>
               {/* Amount */}
               <Col
-                xs="5"
+                xs={edit ? "3" : "5"}
                 className="d-flex align-items-center justify-content-center"
               >
                 <div
@@ -364,44 +395,54 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
                   }`}
                 >
                   {`${g.amount == 0 ? "" : fractionize(g.amount)} ${
-                    g.unit_short ||
-                    (g.amount > 1 ? g.unit_plural : g.unit_singular)
+                    edit
+                      ? ""
+                      : g.unit_short ||
+                        (g.amount > 1 ? g.unit_plural : g.unit_singular)
                   }`}
                 </div>
               </Col>
 
-              {/* At Home */}
+              {/* Status / unit (in edit mode) */}
               <Col
-                xs="1"
+                xs={edit ? "3" : "1"}
                 className="d-flex justify-content-center align-items-center"
               >
-                {/* <input
-                  type="checkbox"
-                  readOnly
-                  style={{ accentColor: "orange" }}
-                  checked={
-                    stock?.find(
-                      (ingredient) => ingredient.product_id == g.product_id
-                    )?.atHome
-                  }
-                /> */}
-                <div
-                  style={{
-                    minWidth: "1rem",
-                    minHeight: "1rem",
-                    borderRadius: "3px",
-                    border: "1px solid black",
-                  }}
-                  className={`${
-                    stock?.find(
-                      (ingredient) => ingredient.product_id == g.product_id
-                    )?.status
-                  }`}
-                ></div>
+                {edit ? (
+                  <div
+                    style={{
+                      width: "70%",
+                      background: "",
+                      border: edit ? "" : "#69A7AB 1.5px solid",
+                    }}
+                    className={`px-2 d-flex align-items-center justify-content-center rounded ${
+                      edit ? "bright-nb" : ""
+                    }`}
+                  >
+                    {g.unit_short ||
+                      (g.amount > 1 ? g.unit_plural : g.unit_singular)}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      minWidth: "1rem",
+                      minHeight: "1rem",
+                      borderRadius: "3px",
+                      border: "1px solid black",
+                    }}
+                    className={`${
+                      stock?.find(
+                        (ingredient) => ingredient.product_id == g.product_id
+                      )?.status
+                    }`}
+                  ></div>
+                )}
               </Col>
             </Row>
           );
         })}
+        {/* Search bar - only in edit mode */}
+        {edit && <IngredientSearch handleAdd={handleAddIngredient} />}
       </Container>
 
       {/* Legend, shop/cook buttons */}

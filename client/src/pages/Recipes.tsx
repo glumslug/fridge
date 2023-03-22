@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Row } from "react-bootstrap";
+import { Container, Row } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import CreateRecipe from "../components/CreateRecipe";
@@ -31,7 +31,7 @@ function Recipes() {
     setView("details");
   };
   return (
-    <>
+    <Container className="p-2">
       <h1 className="text-white mt-5">{`${
         view == "create" ? "Create " : ""
       }Recipe${view == "overview" ? "s" : ""}`}</h1>
@@ -148,7 +148,7 @@ function Recipes() {
           />
         ) : null}
       </div>
-    </>
+    </Container>
   );
 }
 

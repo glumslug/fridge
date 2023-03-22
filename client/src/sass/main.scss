@@ -163,6 +163,20 @@
   }
 }
 
+.bright-fill-pink {
+  cursor: pointer;
+  &:hover {
+    fill: #df5296;
+  }
+}
+
+.bright-border-pink {
+  cursor: pointer;
+  &:hover {
+    border: #df5296;
+  }
+}
+
 .modal-active {
   border-left: #df5296 1.5px solid;
   border-right: #df5296 1.5px solid;

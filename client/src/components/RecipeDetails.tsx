@@ -36,7 +36,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
   const [recipeDetails, setRecipeDetails] = useState<ingredient[] | null>();
   const [edit, setEdit] = useState(false);
   const [stock, setStock] = useState<stockItem[] | null>();
-  const { userData, bulkCartAdd, manageSavedRecipes } = useAuth();
+  const { userData, bulkCartAdd, manageSavedRecipes, deleteRecipe } = useAuth();
   const mySaved = userData?.savedRecipes.some((rec) => rec.id == recipe.id);
   const [modal, setModal] = useState<ModalProps>(emptyModal);
   const userId = userData?.id;
@@ -178,6 +178,16 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     alert("Convert this to my recipe and modify?");
   };
 
+  //delete a recipe
+  const handleDeleteRecipe = async () => {
+    const del = await deleteRecipe(id);
+    if (del) {
+      setView("overview");
+    } else {
+      return;
+    }
+  };
+
   return (
     <>
       <YesNoModal
@@ -234,11 +244,19 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
                 </div>
               </div>
             ) : (
-              <div
-                className="rounded my-1 px-2 text-white bright-orange"
-                onClick={() => setEdit(true)}
-              >
-                Edit
+              <div className="d-flex gap-2">
+                <div
+                  className="rounded my-1 px-2 text-white border border-danger"
+                  onClick={() => handleDeleteRecipe()}
+                >
+                  Delete
+                </div>
+                <div
+                  className="rounded my-1 px-2 text-white bright-orange"
+                  onClick={() => setEdit(true)}
+                >
+                  Edit
+                </div>
               </div>
             )}
           </>

@@ -414,19 +414,39 @@ app.post("/db/recipes/create", protect, (req, res) => {
   const { title, cuisine, source } = req.body;
   const sqlInsert =
     "INSERT INTO recipes (title, cuisine, author, source) VALUES (?,?,?,?)";
-  console.log(sqlInsert);
   db.query(
     sqlInsert,
-    [title, cuisine || 9, source ? null : req.user, source || null],
+    [title, cuisine || 9, req.user, source || null],
     (err, result) => {
       if (err) {
+        console.log(err);
         res.send(err);
       } else {
-        console.log(result);
-        res.send(result);
+        const sqlSelect = "SELECT * FROM recipes WHERE id = ?;";
+        db.query(sqlSelect, [result.insertId], (err2, result2) => {
+          if (err2) {
+            console.log(err2);
+            res.send(err2);
+          } else {
+            res.send(result2);
+          }
+        });
       }
     }
   );
+});
+
+app.delete("/db/recipes/:id", protect, (req, res) => {
+  const { id } = req.params;
+  const sqlDelete = "DELETE FROM recipes WHERE id = ?";
+  db.query(sqlDelete, [id], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      console.log(result);
+      res.send(result);
+    }
+  });
 });
 
 // get cuisine list

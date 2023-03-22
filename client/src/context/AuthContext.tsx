@@ -12,6 +12,7 @@ import {
   basketData,
   productSearchItem,
   basketItem,
+  recipe,
 } from "../utilities/interfaces";
 import { useNavigate } from "react-router-dom";
 import YesNoModal from "../components/YesNoModal";
@@ -29,7 +30,7 @@ type CRUD = {
   action?: string;
 };
 
-type CreateRecipe = {
+type CreateRecipeProps = {
   title: string;
   cuisine: number | null;
   source: number | null;
@@ -43,8 +44,14 @@ type AuthProviderProps = {
   children: ReactNode;
 };
 
-type Message = {
-  message: string;
+type notSelect = {
+  message?: string;
+  insertId?: number;
+};
+
+type createRecipeReturn = {
+  message?: string;
+  data?: recipe;
 };
 
 type AuthContext = {
@@ -68,20 +75,21 @@ type AuthContext = {
     product,
     amount,
     action,
-  }: CRUD) => Promise<Message | undefined>;
-  bulkCartAdd: ({ values }: bulkAddProps) => Promise<Message | undefined>;
+  }: CRUD) => Promise<notSelect | undefined>;
+  bulkCartAdd: ({ values }: bulkAddProps) => Promise<notSelect | undefined>;
   manageBasket: ({ product, amount, action }: CRUD) => void;
-  upsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
-  downsertItem: ({ product, amount }: CRUD) => Promise<Message | undefined>;
+  upsertItem: ({ product, amount }: CRUD) => Promise<notSelect | undefined>;
+  downsertItem: ({ product, amount }: CRUD) => Promise<notSelect | undefined>;
   createRecipe: ({
     title,
     cuisine,
     source,
-  }: CreateRecipe) => Promise<Message | undefined>;
+  }: CreateRecipeProps) => Promise<createRecipeReturn | undefined>;
+  deleteRecipe: (id: number) => Promise<notSelect | undefined | boolean>;
   manageSavedRecipes: (
     id: number,
     action: string
-  ) => Promise<Message | undefined>;
+  ) => Promise<notSelect | undefined>;
 };
 export const AuthContext = createContext({} as AuthContext);
 
@@ -347,7 +355,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   //create recipe
-  const createRecipe = async ({ title, cuisine, source }: CreateRecipe) => {
+  const createRecipe = async ({
+    title,
+    cuisine,
+    source,
+  }: CreateRecipeProps) => {
     // action is add, remove, or update
     const add = await axios({
       url: "/db/recipes/create",
@@ -363,12 +375,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
       },
     });
     if (add.data) {
-      if (add.data.warningStatus == 0) {
-        toast.success("Recipe created!.");
-        refreshContext();
-      } else {
-        return { message: "Something went wrong!" };
-      }
+      toast.success("Recipe created!");
+      refreshContext();
+      console.log(add.data);
+      return { data: add.data };
+    } else {
+      return { message: "Something went wrong!" };
+    }
+  };
+
+  //delete a recipe
+  const deleteRecipe = async (id: number) => {
+    const del = await await axios({
+      url: "/db/recipes/" + id,
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${userData?.token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (del.data.errno) {
+      toast.error("Something went wrong!");
+      return false;
+    } else {
+      toast.success("Recipe deleted.");
+      refreshContext();
+      return true;
     }
   };
 
@@ -389,6 +421,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         upsertItem,
         manageSavedRecipes,
         createRecipe,
+        deleteRecipe,
       }}
     >
       {children}

@@ -6,6 +6,7 @@ import { ingredient, productSearchItem, recipe } from "../utilities/interfaces";
 import { useAuth } from "../context/AuthContext";
 import YesNoModal from "./YesNoModal";
 import IngredientSearch from "./IngredientSearch";
+import DetailsDisplayRow from "./detailsDisplayRow";
 
 type RecipeDetailsProps = {
   recipe: recipe;
@@ -13,18 +14,20 @@ type RecipeDetailsProps = {
   myOwn: boolean;
 };
 
-type stockItem = {
+export interface stockItem {
   product_id: number;
   name: string;
   amount: number;
   status: string;
-};
+}
 
-type newIngredient = {
+export interface newIngredient {
   product_id: number;
-  name: string;
   amount: number;
-};
+  unit: number;
+  name: string;
+}
+
 type BodyUl = { name: string; amount: number };
 type ModalProps = {
   show: boolean;
@@ -40,6 +43,15 @@ const emptyModal = {
   message: { title: "", body: { pre: "", span: "", post: "" } },
   action: () => alert("Empty"),
 };
+
+// Recipe Details strategy:
+
+// 1. Abstract Recipe Details rows into 2 components: detailsEditRow and detailsDisplayRow
+// 2. In edit mode, add all recipeDetails array items to new array with new field called "action", which will be "none" by default
+// 3. If we delete, the action is "delete", if we update its "update" and if we add a new one it comes in with "insert"
+// 4. On save we run this array through a switch statement in AuthContext and perform any actions
+
+// Optional: Organize components directory into folders for easy access || organize all into pages, with sub components folders, and leave common components in components folder
 
 const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
   const id = recipe.id;
@@ -215,11 +227,33 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
 
   // add an ingredient
   const handleAddIngredient = (result: productSearchItem) => {
-    newIngredients.push({
-      product_id: result.product,
-      name: result.name,
-      amount: 1,
-    });
+    setNewIngredients([
+      ...newIngredients,
+      {
+        product_id: result.product,
+        amount: 1,
+        unit: 1,
+        name: result.name,
+      },
+    ]);
+  };
+
+  const handleAddEdit = (amount: number, unit: number, g: ingredient) => {
+    setNewIngredients([
+      ...newIngredients,
+      {
+        product_id: g.product_id,
+        amount: amount,
+        unit: unit,
+        name: g.name,
+      },
+    ]);
+  };
+
+  const removeNew = (i: number) => {
+    let arr = [...newIngredients];
+    arr.splice(i, 1);
+    setNewIngredients(arr);
   };
 
   const handleSaveEdits = () => {
@@ -268,12 +302,6 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
           <>
             {edit ? (
               <div className="d-flex gap-2">
-                <div
-                  className="rounded my-1 px-2 text-white bright-orange"
-                  onClick={() => handleDeleteRecipe()}
-                >
-                  Delete
-                </div>
                 <div
                   className="rounded my-1 px-2 text-white bright-cancel"
                   onClick={() => setEdit(false)}
@@ -325,125 +353,11 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
       </div>
 
       {/* Ingredients List */}
-      <Container className="me-2">
-        {/* Header Row */}
-        {recipeDetails?.length !== 0 ? (
-          <Row className="g-0 mb-2" style={{ fontSize: "13px" }}>
-            <Col
-              xs="6"
-              className="px-2 d-flex align-items-center justify-content-start"
-            >
-              Ingredient
-            </Col>
-            <Col
-              xs={edit ? "3" : "5"}
-              className="d-flex align-items-center justify-content-center"
-            >
-              Amount
-            </Col>
-
-            <Col
-              xs={edit ? "3" : "1"}
-              className="d-flex align-items-center justify-content-center"
-            >
-              {edit ? "Unit" : "Status"}
-            </Col>
-          </Row>
-        ) : !edit ? (
-          <div
-            className="w-100 d-flex justify-content-center"
-            style={{ fontStyle: "italic" }}
-          >
-            Click "Edit" to add ingredients.
-          </div>
-        ) : null}
-
-        {/* {edit ? <IngredientSearch handleAdd={handleAdd}/> : null} */}
-        {/* Ingredients */}
-
-        {recipeDetails?.map((g: ingredient) => {
-          return (
-            <Row className="g-0 d-flex mb-1" key={g.ingredient_id}>
-              {/* Title */}
-              <Col
-                style={{
-                  gap: "10px",
-                  padding: "1px 10px",
-                  background: "#202020",
-                  border: edit ? "" : "#436d92 1.5px solid",
-                }}
-                className={`text-nowrap shadow-lg h-33 d-flex justify-content-start align-items-center rounded ${
-                  edit ? "bright-blue" : ""
-                }`}
-                xs="6"
-              >
-                {g.name}
-              </Col>
-              {/* Amount */}
-              <Col
-                xs={edit ? "3" : "5"}
-                className="d-flex align-items-center justify-content-center"
-              >
-                <div
-                  style={{
-                    width: "70%",
-                    background: "",
-                    border: edit ? "" : "#69A7AB 1.5px solid",
-                  }}
-                  className={`px-2 d-flex align-items-center justify-content-center rounded ${
-                    edit ? "bright-nb" : ""
-                  }`}
-                >
-                  {`${g.amount == 0 ? "" : fractionize(g.amount)} ${
-                    edit
-                      ? ""
-                      : g.unit_short ||
-                        (g.amount > 1 ? g.unit_plural : g.unit_singular)
-                  }`}
-                </div>
-              </Col>
-
-              {/* Status / unit (in edit mode) */}
-              <Col
-                xs={edit ? "3" : "1"}
-                className="d-flex justify-content-center align-items-center"
-              >
-                {edit ? (
-                  <div
-                    style={{
-                      width: "70%",
-                      background: "",
-                      border: edit ? "" : "#69A7AB 1.5px solid",
-                    }}
-                    className={`px-2 d-flex align-items-center justify-content-center rounded ${
-                      edit ? "bright-nb" : ""
-                    }`}
-                  >
-                    {g.unit_short ||
-                      (g.amount > 1 ? g.unit_plural : g.unit_singular)}
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      minWidth: "1rem",
-                      minHeight: "1rem",
-                      borderRadius: "3px",
-                      border: "1px solid black",
-                    }}
-                    className={`${
-                      stock?.find(
-                        (ingredient) => ingredient.product_id == g.product_id
-                      )?.status
-                    }`}
-                  ></div>
-                )}
-              </Col>
-            </Row>
-          );
-        })}
-        {/* Search bar - only in edit mode */}
-        {edit && <IngredientSearch handleAdd={handleAddIngredient} />}
-      </Container>
+      <DetailsDisplayRow
+        recipeDetails={recipeDetails}
+        fractionize={fractionize}
+        stock={stock}
+      />
 
       {/* Legend, shop/cook buttons */}
       <div
@@ -511,23 +425,32 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
         </div>
 
         {/* Shop & Cook buttons */}
-        <div className="d-flex gap-1">
+        {edit ? (
           <div
-            className="rounded my-1 p-1 px-3 text-white bright-orange"
-            style={{ maxHeight: "2.3rem" }}
-            onClick={() => handleShop()}
+            className="rounded my-1 px-2 text-white bright-orange d-flex align-items-center"
+            onClick={() => handleDeleteRecipe()}
           >
-            Shop
+            Delete
           </div>
+        ) : (
+          <div className="d-flex gap-1">
+            <div
+              className="rounded my-1 p-1 px-3 text-white bright-orange"
+              style={{ maxHeight: "2.3rem" }}
+              onClick={() => handleShop()}
+            >
+              Shop
+            </div>
 
-          <div
-            className="rounded my-1 p-1 px-3 text-white bright-submit2"
-            style={{ maxHeight: "2.3rem" }}
-            onClick={() => handleCook()}
-          >
-            Cook
+            <div
+              className="rounded my-1 p-1 px-3 text-white bright-submit2"
+              style={{ maxHeight: "2.3rem" }}
+              onClick={() => handleCook()}
+            >
+              Cook
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

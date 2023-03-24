@@ -46,6 +46,15 @@
   }
 }
 
+.bright-GY {
+  cursor: pointer;
+  border: #69a7ab 1.5px solid;
+  transition: 0.3s;
+  &:hover {
+    border: #e9cb71 1.5px solid;
+  }
+}
+
 .bright-orange {
   cursor: pointer;
   transition: 0.3s;

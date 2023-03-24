@@ -31,7 +31,7 @@ function Recipes() {
     setView("details");
   };
   return (
-    <Container className="p-2">
+    <>
       <h1 className="text-white mt-5">{`${
         view == "create" ? "Create " : ""
       }Recipe${view == "overview" ? "s" : ""}`}</h1>
@@ -148,7 +148,7 @@ function Recipes() {
           />
         ) : null}
       </div>
-    </Container>
+    </>
   );
 }
 

@@ -13,6 +13,8 @@ import {
   productSearchItem,
   basketItem,
   recipe,
+  cuisines,
+  units,
 } from "../utilities/interfaces";
 import { useNavigate } from "react-router-dom";
 import YesNoModal from "../components/YesNoModal";
@@ -57,6 +59,8 @@ type createRecipeReturn = {
 type AuthContext = {
   userData: userData | null;
   basketData: basketData | null;
+  units: units[] | null;
+  cuisines: cuisines[] | null;
   refreshContext: (action?: string) => void;
   loginUser: ({
     email,
@@ -100,6 +104,8 @@ export function useAuth() {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [userData, setUserData] = useState<userData | null>(null);
   const [basketData, setBasketData] = useState<basketData | null>(null);
+  const [units, setUnits] = useState<units[] | null>(null);
+  const [cuisines, setCuisines] = useState<cuisines[] | null>(null);
   const navigate = useNavigate();
   //Get context from localstorage on page refresh
   useEffect(() => {
@@ -140,6 +146,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return { message: "Refreshed successfully." };
     }
   };
+
+  // get static lists: cuisines, units
+  useEffect(() => {
+    const getCuisines = async () => {
+      console.log("get cuisines");
+      const cuisineList = await axios.get("/db/cuisines");
+      if (cuisineList.data) {
+        setCuisines(cuisineList.data);
+      }
+    };
+    getCuisines();
+    const getUnits = async () => {
+      console.log("get units");
+      const unitList = await axios.get("/db/units");
+      if (unitList.data) {
+        setUnits(unitList.data);
+      }
+    };
+    getUnits();
+  }, []);
 
   const loginUser = async ({ email, password }: credentials) => {
     localStorage.removeItem("user");
@@ -409,6 +435,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       value={{
         userData,
         basketData,
+        cuisines,
+        units,
         loginUser,
         registerUser,
         logoutUser,

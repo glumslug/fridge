@@ -1,23 +1,58 @@
 import React from "react";
 import { Col, Container, Row } from "react-bootstrap";
-import { ingredient } from "../utilities/interfaces";
-import { newIngredient, stockItem } from "./RecipeDetails";
+import { useAuth } from "../context/AuthContext";
+import { productSearchItem } from "../utilities/interfaces";
+import IngredientSearch from "./IngredientSearch";
+import { ingredientList } from "./RecipeDetails";
 
 type EditRowProps = {
-  recipeDetails: ingredient[];
+  tempIngredients: ingredientList[] | null | undefined;
+  setTempIngredients: React.Dispatch<
+    React.SetStateAction<ingredientList[] | null | undefined>
+  >;
   fractionize: (argo0: number) => string;
-  newIngredients: newIngredient[];
 };
 
 const DetailsEditRow = ({
-  recipeDetails,
+  tempIngredients,
+  setTempIngredients,
   fractionize,
-  newIngredients,
 }: EditRowProps) => {
+  const { units } = useAuth();
+  // add an ingredient
+  const handleAddIngredient = (result: productSearchItem) => {
+    if (!tempIngredients) return;
+    let newItem: ingredientList = {
+      product_id: result.product,
+      name: result.name,
+      amount: 1,
+      editStatus: "new",
+    };
+    setTempIngredients([...tempIngredients, newItem]);
+  };
+
+  const handleManageEdit = (
+    index: number,
+    action: string,
+    amount?: number,
+    unit?: number
+  ) => {
+    if (!tempIngredients) return;
+    switch (action) {
+      case "delete":
+        let newTemp = JSON.parse(JSON.stringify(tempIngredients));
+        newTemp[index].editStatus = "delete";
+        setTempIngredients(newTemp);
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <Container className="me-2">
       {/* Header Row */}
-      {recipeDetails?.length !== 0 ? (
+      {tempIngredients?.length !== 0 ? (
         <Row className="g-0 mb-2" style={{ fontSize: "13px" }}>
           <Col xs={"1"}></Col>
           <Col
@@ -45,17 +80,16 @@ const DetailsEditRow = ({
       {/* {edit ? <IngredientSearch handleAdd={handleAdd}/> : null} */}
       {/* Ingredients */}
 
-      {recipeDetails?.map((g: ingredient) => {
-        let newG = newIngredients.find(
-          (n: newIngredient) => n.product_id == g.product_id
-        );
-
-        console.log(newG);
+      {tempIngredients?.map((g: ingredientList, i) => {
+        if (g.editStatus === "delete") return;
         return (
-          <Row className="g-0 d-flex mb-1" key={g.ingredient_id}>
+          <Row className="g-0 d-flex mb-1" key={g.product_id}>
             {/* Title */}
 
-            <Col xs="1">
+            <Col
+              xs="1"
+              className="d-flex align-items-center justify-content-center"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -63,6 +97,7 @@ const DetailsEditRow = ({
                 fill="currentColor"
                 className="bi bi-dash-circle bright-fill-pink"
                 viewBox="0 0 16 16"
+                onClick={() => handleManageEdit(i, "delete")}
               >
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                 <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
@@ -96,7 +131,7 @@ const DetailsEditRow = ({
                 {fractionize(g.amount)}
               </div>
             </Col>
-            {/* Status / unit (in edit mode) */}
+            {/* Unit */}
             <Col
               xs={"3"}
               className="d-flex justify-content-center align-items-center"
@@ -109,87 +144,16 @@ const DetailsEditRow = ({
                 className="px-2 d-flex align-items-center justify-content-center rounded bright-nb"
               >
                 {g.unit_short ||
-                  (g.amount > 1 ? g.unit_plural : g.unit_singular)}
+                  (g.amount > 1 ? g.unit_plural : g.unit_singular) ||
+                  "-"}
               </div>
             </Col>
           </Row>
         );
       })}
-      {/* New Ingredients Rows */}
-      {edit &&
-        newIngredients?.map((g: newIngredient, i) => {
-          return (
-            <Row className="g-0 d-flex mb-1" key={g.product_id}>
-              <Col xs="1">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  fill="currentColor"
-                  className="bi bi-dash-circle bright-fill-pink"
-                  viewBox="0 0 16 16"
-                  onClick={() => removeNew(i)}
-                >
-                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                  <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
-                </svg>
-              </Col>
-              {/* Title */}
-              <Col
-                style={{
-                  gap: "10px",
-                  padding: "1px 10px",
-                  background: "#202020",
-                  border: edit ? "" : "#436d92 1.5px solid",
-                }}
-                className={`text-nowrap shadow-lg h-33 d-flex justify-content-start align-items-center rounded ${
-                  edit ? "bright-blue" : ""
-                }`}
-                xs="5"
-              >
-                {g.name}
-              </Col>
-              {/* Amount */}
-              <Col
-                xs={"3"}
-                className="d-flex align-items-center justify-content-center"
-              >
-                <div
-                  style={{
-                    width: "70%",
-                    background: "",
-                    border: edit ? "" : "#69A7AB 1.5px solid",
-                  }}
-                  className={`px-2 d-flex align-items-center justify-content-center rounded ${
-                    edit ? "bright-GY" : ""
-                  }`}
-                >
-                  {`${g.amount == 0 ? "" : fractionize(g.amount)}`}
-                </div>
-              </Col>
-              {/* unit */}
-              <Col
-                xs={"3"}
-                className="d-flex justify-content-center align-items-center"
-              >
-                <div
-                  style={{
-                    width: "90%",
-                    background: "",
-                    border: edit ? "" : "#69A7AB 1.5px solid",
-                  }}
-                  className={`px-2 d-flex align-items-center justify-content-center rounded ${
-                    edit ? "bright-nb" : ""
-                  }`}
-                >
-                  oz
-                </div>
-              </Col>
-            </Row>
-          );
-        })}
+
       {/* Search bar - only in edit mode */}
-      {edit && <IngredientSearch handleAdd={handleAddIngredient} />}
+      <IngredientSearch handleAdd={handleAddIngredient} />
     </Container>
   );
 };

@@ -21,7 +21,6 @@ const CreateRecipe = ({ setView, setSelectedRecipe }: CreateRecipeProps) => {
   // Cuisine be pulled from a table and queried only once, if blank it will default to 'general'?
   // Source should query authors, but only those with aliases. use regex or string-similarity package to see if close to something already in the db
   // If no matching source is found, they can hit +, which will INSERT into authors db as alias
-  const [cuisines, setCuisines] = useState<cuisines[] | null>(null);
   const [cuisineValue, setCuisineValue] = useState<string>("");
   const [displayCuisines, setDisplayCuisines] = useState<cuisines[]>([]);
   const [sourceValue, setSourceValue] = useState<string>("");
@@ -31,7 +30,7 @@ const CreateRecipe = ({ setView, setSelectedRecipe }: CreateRecipeProps) => {
     cuisine: null,
     source: null,
   });
-  const { createRecipe } = useAuth();
+  const { createRecipe, cuisines } = useAuth();
   const setField = (field: string, value: string | number) => {
     setForm({ ...form, [field]: value });
   };
@@ -55,17 +54,6 @@ const CreateRecipe = ({ setView, setSelectedRecipe }: CreateRecipeProps) => {
   // STEP 1: create recipe with title, user, cuisine
   // STEP 2: populate recipe details with product search, unit/quant pickers
 
-  // get cuisines list
-  useEffect(() => {
-    const getCuisines = async () => {
-      const cuisineList = await axios.get("/db/cuisines");
-      if (cuisineList.data) {
-        setCuisines(cuisineList.data);
-      }
-    };
-    getCuisines();
-  }, []);
-
   //search cuisines
   const searchCuisines = (search: string) => {
     setCuisineValue(search);
@@ -76,7 +64,6 @@ const CreateRecipe = ({ setView, setSelectedRecipe }: CreateRecipeProps) => {
     const re = new RegExp("^" + search, "i");
     const match = cuisines?.filter((c) => re.test(c.name));
     if (match) {
-      console.log(match);
       setDisplayCuisines(match);
     }
   };

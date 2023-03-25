@@ -462,6 +462,18 @@ app.get("/db/cuisines", (req, res) => {
   });
 });
 
+// get units list
+app.get("/db/units", (req, res) => {
+  const sqlSelect = "SELECT * FROM units;";
+  db.query(sqlSelect, (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
 // Generate JWT
 const generateToken = (id, exp) => {
   const period = exp ? exp : "30d";

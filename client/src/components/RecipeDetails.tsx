@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import YesNoModal from "./YesNoModal";
 import IngredientSearch from "./IngredientSearch";
 import DetailsDisplayRow from "./detailsDisplayRow";
+import DetailsEditRow from "./detailsEditRow";
 
 type RecipeDetailsProps = {
   recipe: recipe;
@@ -14,18 +15,16 @@ type RecipeDetailsProps = {
   myOwn: boolean;
 };
 
-export interface stockItem {
+export interface ingredientList {
+  ingredient_id?: number | null;
   product_id: number;
   name: string;
   amount: number;
-  status: string;
-}
-
-export interface newIngredient {
-  product_id: number;
-  amount: number;
-  unit: number;
-  name: string;
+  unit_short?: string | null;
+  unit_singular?: string;
+  unit_plural?: string;
+  stockStatus?: string;
+  editStatus: string | null;
 }
 
 type BodyUl = { name: string; amount: number };
@@ -47,21 +46,23 @@ const emptyModal = {
 // Recipe Details strategy:
 
 // 1. Abstract Recipe Details rows into 2 components: detailsEditRow and detailsDisplayRow
-// 2. In edit mode, add all recipeDetails array items to new array with new field called "action", which will be "none" by default
-// 3. If we delete, the action is "delete", if we update its "update" and if we add a new one it comes in with "insert"
-// 4. On save we run this array through a switch statement in AuthContext and perform any actions
+// only one data array: ingredients. Initially set in the useEffect, only changes on update context.
+// Ingredients has extra fields: stockStatus (grey, green, orange, blue) and editStatus (null, altered, new, delete)
+// on edit, use a second useState to control the unsaved data (initial state is recipe array), on cancel, it will revert back to the ingredients values
+// on Save, filter the array for altered and new and feed it to an upsert function in authcontext
 
 // Optional: Organize components directory into folders for easy access || organize all into pages, with sub components folders, and leave common components in components folder
 
 const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
   const id = recipe.id;
-  const [recipeDetails, setRecipeDetails] = useState<ingredient[] | null>();
+  const [ingredients, setIngredients] = useState<ingredientList[] | null>();
+  const [tempIngredients, setTempIngredients] = useState<
+    ingredientList[] | null
+  >();
   const [edit, setEdit] = useState(false);
-  const [stock, setStock] = useState<stockItem[] | null>();
   const { userData, bulkCartAdd, manageSavedRecipes, deleteRecipe } = useAuth();
   const mySaved = userData?.savedRecipes.some((rec) => rec.id == recipe.id);
   const [modal, setModal] = useState<ModalProps>(emptyModal);
-  const [newIngredients, setNewIngredients] = useState<newIngredient[]>([]);
   const userId = userData?.id;
 
   // GET recipe details
@@ -72,11 +73,10 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
       try {
         const response = await axios.get("/db/recipes/" + id);
         if (response.data) {
-          setRecipeDetails(response.data);
           if (userData) {
-            let arr: stockItem[] = [];
+            let arr: ingredientList[] = [];
             response.data.map((ingredient: ingredient) => {
-              let status = userData.items.some(
+              let stockStatus = userData.items.some(
                 (item) => item.product == ingredient.product_id
               )
                 ? "status-green"
@@ -85,14 +85,15 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
                   )
                 ? "status-blue"
                 : "status-grey";
-              arr.push({
-                product_id: ingredient.product_id,
-                amount: ingredient.amount,
-                name: ingredient.name,
-                status: status,
-              });
+              let temp: ingredientList = {
+                ...ingredient,
+                stockStatus: stockStatus,
+                editStatus: null,
+              };
+              arr.push(temp);
             });
-            setStock(arr);
+            setIngredients(arr);
+            setTempIngredients(arr);
           }
         }
       } catch (error) {
@@ -123,10 +124,10 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     if (!userId) return;
     let arr: number[][] = [];
     let body: BodyUl[] = [];
-    stock?.map((item) => {
-      if (item.status == "status-grey") {
-        arr.push([userId, item.product_id, item.amount]);
-        body.push({ name: item.name, amount: item.amount });
+    ingredients?.map((g) => {
+      if (g.stockStatus == "status-grey") {
+        arr.push([userId, g.product_id, g.amount]);
+        body.push({ name: g.name, amount: g.amount });
       }
     });
     const handleAdd = () => {
@@ -225,39 +226,13 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     }
   };
 
-  // add an ingredient
-  const handleAddIngredient = (result: productSearchItem) => {
-    setNewIngredients([
-      ...newIngredients,
-      {
-        product_id: result.product,
-        amount: 1,
-        unit: 1,
-        name: result.name,
-      },
-    ]);
-  };
-
-  const handleAddEdit = (amount: number, unit: number, g: ingredient) => {
-    setNewIngredients([
-      ...newIngredients,
-      {
-        product_id: g.product_id,
-        amount: amount,
-        unit: unit,
-        name: g.name,
-      },
-    ]);
-  };
-
-  const removeNew = (i: number) => {
-    let arr = [...newIngredients];
-    arr.splice(i, 1);
-    setNewIngredients(arr);
-  };
-
   const handleSaveEdits = () => {
-    alert("Save edits");
+    // upsertIngredients(newIngredients)
+  };
+
+  const handleCancelEdits = () => {
+    setTempIngredients(ingredients);
+    setEdit(false);
   };
 
   return (
@@ -304,7 +279,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
               <div className="d-flex gap-2">
                 <div
                   className="rounded my-1 px-2 text-white bright-cancel"
-                  onClick={() => setEdit(false)}
+                  onClick={handleCancelEdits}
                 >
                   Cancel
                 </div>
@@ -353,11 +328,18 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
       </div>
 
       {/* Ingredients List */}
-      <DetailsDisplayRow
-        recipeDetails={recipeDetails}
-        fractionize={fractionize}
-        stock={stock}
-      />
+      {edit ? (
+        <DetailsEditRow
+          tempIngredients={tempIngredients}
+          setTempIngredients={setTempIngredients}
+          fractionize={fractionize}
+        />
+      ) : (
+        <DetailsDisplayRow
+          ingredients={ingredients}
+          fractionize={fractionize}
+        />
+      )}
 
       {/* Legend, shop/cook buttons */}
       <div

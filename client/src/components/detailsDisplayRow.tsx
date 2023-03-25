@@ -1,22 +1,17 @@
 import React from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { ingredient } from "../utilities/interfaces";
-import { stockItem } from "./RecipeDetails";
+import { ingredientList } from "./RecipeDetails";
 
 type DisplayRowProps = {
-  recipeDetails: ingredient[] | null | undefined;
+  ingredients: ingredientList[] | null | undefined;
   fractionize: (argo0: number) => string;
-  stock: stockItem[] | null | undefined;
 };
-const DetailsDisplayRow = ({
-  recipeDetails,
-  fractionize,
-  stock,
-}: DisplayRowProps) => {
+const DetailsDisplayRow = ({ ingredients, fractionize }: DisplayRowProps) => {
   return (
     <Container className="me-2">
       {/* Header Row */}
-      {recipeDetails?.length !== 0 ? (
+      {ingredients?.length !== 0 ? (
         <Row className="g-0 mb-2" style={{ fontSize: "13px" }}>
           <Col
             xs={"5"}
@@ -48,7 +43,7 @@ const DetailsDisplayRow = ({
       )}
 
       {/* Ingredients */}
-      {recipeDetails?.map((g: ingredient) => {
+      {ingredients?.map((g: ingredientList) => {
         return (
           <Row className="g-0 d-flex mb-1" key={g.ingredient_id}>
             {/* Title */}
@@ -96,11 +91,7 @@ const DetailsDisplayRow = ({
                   borderRadius: "3px",
                   border: "1px solid black",
                 }}
-                className={`${
-                  stock?.find(
-                    (ingredient) => ingredient.product_id == g.product_id
-                  )?.status
-                }`}
+                className={`${g.stockStatus}`}
               ></div>
             </Col>
           </Row>

@@ -81,7 +81,7 @@ export interface ingredient {
   product_id: number;
   name: string;
   amount: number;
-  unit_short: string;
+  unit_short: string | null;
   unit_singular: string;
   unit_plural: string;
 }
@@ -89,6 +89,13 @@ export interface ingredient {
 export interface cuisines {
   id: number;
   name: string;
+}
+
+export interface units {
+  id: number;
+  unit_short: string | null;
+  unit_singular: string;
+  unit_plural: string;
 }
 
 export interface sources {

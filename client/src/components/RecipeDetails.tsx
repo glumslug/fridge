@@ -111,9 +111,9 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
       .replace(/\b1\/2|0?\.5\b/, "½")
       .replace(/\b1\/4|0?\.25\b/, "¼")
       .replace(/\b3\/4|0?\.75\b/, "¾")
-      .replace(/\b1\/3|0?\.333\b/, "⅓")
-      .replace(/\b2\/3|0?\.666\b/, "⅔")
-      .replace(/\b1\/8|0?\.125\b/, "⅛");
+      .replace(/\b1\/3|0?\.333|0?\.33\b/, "⅓")
+      .replace(/\b2\/3|0?\.666|0?\.66\b/, "⅔")
+      .replace(/\b1\/8|0?\.125|0?\.12\b/, "⅛");
     return str;
   };
 

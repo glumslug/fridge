@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
 import { productSearchItem } from "../utilities/interfaces";
+import AmountModal from "./AmountModal";
 import IngredientSearch from "./IngredientSearch";
 import { ingredientList } from "./RecipeDetails";
 
@@ -13,12 +14,24 @@ type EditRowProps = {
   fractionize: (argo0: number) => string;
 };
 
+type AmountModalState = {
+  index: number;
+  show: boolean;
+  amount: number;
+};
+
 const DetailsEditRow = ({
   tempIngredients,
   setTempIngredients,
   fractionize,
 }: EditRowProps) => {
   const { units } = useAuth();
+  const [amountModal, setAmountModal] = useState<AmountModalState>({
+    index: 0,
+    show: false,
+    amount: 0,
+  });
+  console.log(tempIngredients);
   // add an ingredient
   const handleAddIngredient = (result: productSearchItem) => {
     if (!tempIngredients) return;
@@ -38,12 +51,16 @@ const DetailsEditRow = ({
     unit?: number
   ) => {
     if (!tempIngredients) return;
+    let newTemp = JSON.parse(JSON.stringify(tempIngredients));
     switch (action) {
       case "delete":
-        let newTemp = JSON.parse(JSON.stringify(tempIngredients));
         newTemp[index].editStatus = "delete";
         setTempIngredients(newTemp);
         break;
+      case "update":
+        newTemp[index].editStatus = "update";
+        newTemp[index].amount = amount;
+        setTempIngredients(newTemp);
       default:
         break;
     }
@@ -51,6 +68,16 @@ const DetailsEditRow = ({
 
   return (
     <Container className="me-2">
+      {amountModal.show && (
+        <AmountModal
+          handleManageEdit={handleManageEdit}
+          fractionize={fractionize}
+          amount={amountModal.amount}
+          index={amountModal.index}
+          show={amountModal.show}
+          handleClose={() => setAmountModal({ ...amountModal, show: false })}
+        />
+      )}
       {/* Header Row */}
       {tempIngredients?.length !== 0 ? (
         <Row className="g-0 mb-2" style={{ fontSize: "13px" }}>
@@ -127,6 +154,9 @@ const DetailsEditRow = ({
                   background: "",
                 }}
                 className="px-2 d-flex align-items-center justify-content-center rounded bright-GY"
+                onClick={() =>
+                  setAmountModal({ show: true, index: i, amount: g.amount })
+                }
               >
                 {fractionize(g.amount)}
               </div>

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Card, Container, InputGroup, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
 import { productSearchItem } from "../utilities/interfaces";
+import ProductMakerModal from "./ProductMakerModal";
 
 type searchProps = {
   handleAdd: (results: productSearchItem) => void;
@@ -12,6 +13,7 @@ const ProductSearch = ({ handleAdd }: searchProps) => {
   const [searchResults, setSearchResults] = useState<productSearchItem[]>([]);
   const [searchValue, setSearchValue] = useState<string>("");
   const [key, setKey] = useState("");
+  const [productModal, setProductModal] = useState(false);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const str = e.target.value;
@@ -50,8 +52,20 @@ const ProductSearch = ({ handleAdd }: searchProps) => {
     //Add product to shopping cart
     handleAdd(result);
   };
+
+  const handleAddProduct = (product: productSearchItem) => {
+    handleSelect(product);
+    setProductModal(false);
+  };
   return (
     <>
+      {productModal && (
+        <ProductMakerModal
+          show={productModal}
+          handleAddProduct={handleAddProduct}
+          handleClose={() => setProductModal(false)}
+        />
+      )}
       <InputGroup className="p-0" style={{ flexShrink: "1" }}>
         <Form.Control
           aria-label="Default"
@@ -106,6 +120,38 @@ const ProductSearch = ({ handleAdd }: searchProps) => {
               </div>
             );
           })}
+          {searchValue && (
+            <div
+              className="d-flex align-items-center justify-content-end"
+              style={{
+                gap: "10px",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                fill="currentColor"
+                className="bi bi-plus-circle"
+                viewBox="0 0 16 16"
+              >
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+              </svg>
+              <Card
+                style={{
+                  width: "auto",
+                  background: "black",
+                  gap: "10px",
+                  padding: "3px 8px",
+                }}
+                onClick={() => setProductModal(true)}
+                className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
+              >
+                Add New
+              </Card>
+            </div>
+          )}
         </Container>
       </InputGroup>
     </>

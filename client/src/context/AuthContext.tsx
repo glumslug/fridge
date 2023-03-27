@@ -63,6 +63,16 @@ type editRecipeProps = {
   recipe: number;
 };
 
+type createProductReturn = {
+  message?: string;
+  data?: productSearchItem;
+};
+
+type CreateProductProps = {
+  name: string;
+  bin: string;
+};
+
 type AuthContext = {
   userData: userData | null;
   basketData: basketData | null;
@@ -96,6 +106,10 @@ type AuthContext = {
     cuisine,
     source,
   }: CreateRecipeProps) => Promise<createRecipeReturn | undefined>;
+  createProduct: ({
+    name,
+    bin,
+  }: CreateProductProps) => Promise<createProductReturn | undefined>;
   deleteRecipe: (id: number) => Promise<notSelect | undefined | boolean>;
   manageSavedRecipes: (
     id: number,
@@ -418,6 +432,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  //create product
+  const createProduct = async ({ name, bin }: CreateProductProps) => {
+    const add = await axios({
+      url: "/db/products/create",
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${userData?.token}`,
+        "Content-Type": "application/json",
+      },
+      data: {
+        name,
+        bin,
+      },
+    });
+    if (add.data) {
+      toast.success("Product created!");
+      return { data: add.data[0] };
+    } else {
+      return { message: "Something went wrong!" };
+    }
+  };
+
   //delete a recipe
   const deleteRecipe = async (id: number) => {
     const del = await await axios({
@@ -479,7 +515,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           "Content-Type": "application/json",
         },
         data: {
-          action: action,
           ingredients: ingredients,
           recipe: recipe,
         },
@@ -513,6 +548,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         manageSavedRecipes,
         editRecipe,
         createRecipe,
+        createProduct,
         deleteRecipe,
       }}
     >

@@ -450,6 +450,29 @@ app.delete("/db/recipes/:id", protect, (req, res) => {
   });
 });
 
+// create a product
+app.post("/db/products/create", protect, (req, res) => {
+  const { name, bin } = req.body;
+  const sqlInsert = "INSERT INTO products (name, bin) VALUES (?,?)";
+  db.query(sqlInsert, [name, bin], (err, result) => {
+    if (err) {
+      console.log(err);
+      res.send(err);
+    } else {
+      const sqlSelect =
+        "SELECT id as product, bin, name FROM products WHERE id = ?;";
+      db.query(sqlSelect, [result.insertId], (err2, result2) => {
+        if (err2) {
+          console.log(err2);
+          res.send(err2);
+        } else {
+          res.send(result2);
+        }
+      });
+    }
+  });
+});
+
 // get cuisine list
 app.get("/db/cuisines", (req, res) => {
   const sqlSelect = "SELECT * FROM cuisines;";

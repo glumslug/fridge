@@ -20,6 +20,7 @@ export interface ingredientList {
   product_id: number;
   name: string;
   amount: number;
+  unit: number;
   unit_short?: string | null;
   unit_singular?: string;
   unit_plural?: string;
@@ -60,7 +61,13 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     ingredientList[] | null
   >();
   const [edit, setEdit] = useState(false);
-  const { userData, bulkCartAdd, manageSavedRecipes, deleteRecipe } = useAuth();
+  const {
+    userData,
+    bulkCartAdd,
+    manageSavedRecipes,
+    deleteRecipe,
+    editRecipe,
+  } = useAuth();
   const mySaved = userData?.savedRecipes.some((rec) => rec.id == recipe.id);
   const [modal, setModal] = useState<ModalProps>(emptyModal);
   const userId = userData?.id;
@@ -94,6 +101,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
             });
             setIngredients(arr);
             setTempIngredients(arr);
+            console.log("Refreshed recipe details");
           }
         }
       } catch (error) {
@@ -227,7 +235,23 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
   };
 
   const handleSaveEdits = () => {
-    // upsertIngredients(newIngredients)
+    let updateG = tempIngredients?.filter((g) => g.editStatus === "update");
+    let deleteG = tempIngredients?.filter((g) => g.editStatus === "delete");
+    let newG = tempIngredients?.filter((g) => g.editStatus === "new");
+    if (newG?.some((g) => g.unit_singular === undefined)) {
+      toast.error("Please add units for all items!");
+      return;
+    }
+    if (updateG !== undefined && updateG?.length > 0) {
+      editRecipe({ action: "update", ingredients: updateG, recipe: id });
+    }
+    if (deleteG !== undefined && deleteG?.length > 0) {
+      editRecipe({ action: "delete", ingredients: deleteG, recipe: id });
+    }
+    if (newG !== undefined && newG?.length > 0) {
+      editRecipe({ action: "new", ingredients: newG, recipe: id });
+    }
+    setEdit(false);
   };
 
   const handleCancelEdits = () => {

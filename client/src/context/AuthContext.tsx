@@ -18,6 +18,7 @@ import {
 } from "../utilities/interfaces";
 import { useNavigate } from "react-router-dom";
 import YesNoModal from "../components/YesNoModal";
+import { ingredientList } from "../components/RecipeDetails";
 
 type credentials = {
   email: string;
@@ -54,6 +55,12 @@ type notSelect = {
 type createRecipeReturn = {
   message?: string;
   data?: recipe;
+};
+
+type editRecipeProps = {
+  action: string;
+  ingredients: ingredientList[];
+  recipe: number;
 };
 
 type AuthContext = {
@@ -94,6 +101,7 @@ type AuthContext = {
     id: number,
     action: string
   ) => Promise<notSelect | undefined>;
+  editRecipe: ({ action, ingredients }: editRecipeProps) => void;
 };
 export const AuthContext = createContext({} as AuthContext);
 
@@ -114,6 +122,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     user ? setUserData(JSON.parse(user)) : null;
     basket ? setBasketData(JSON.parse(basket)) : null;
   }, []);
+
   const refreshContext = async (action?: string) => {
     const response = await axios({
       url: "/db/fullContext/",
@@ -169,7 +178,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const loginUser = async ({ email, password }: credentials) => {
     localStorage.removeItem("user");
-    console.table({ email, password });
     try {
       const user = await axios.post("/db/login", {
         email: email,
@@ -430,6 +438,61 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const editRecipe = async ({
+    action,
+    ingredients,
+    recipe,
+  }: editRecipeProps) => {
+    console.log(action);
+    console.log(ingredients);
+    if (action === "update") {
+      Promise.all(
+        ingredients.map(async (g) => {
+          const edit = await axios({
+            url: "/db/recipes/edit/update",
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${userData?.token}`,
+              "Content-Type": "application/json",
+            },
+            data: {
+              ingredient: g,
+              recipe: recipe,
+            },
+          });
+          if (edit.data) {
+            return true;
+          } else {
+            return { message: "Something went wrong!" };
+          }
+        })
+      ).then(() => {
+        toast.success("Recipe updated!");
+        refreshContext();
+      });
+    } else {
+      const edit = await axios({
+        url: "/db/recipes/edit/" + action,
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${userData?.token}`,
+          "Content-Type": "application/json",
+        },
+        data: {
+          action: action,
+          ingredients: ingredients,
+          recipe: recipe,
+        },
+      });
+      if (edit.data) {
+        toast.success("Recipe updated!");
+        refreshContext();
+      } else {
+        return { message: "Something went wrong!" };
+      }
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -448,6 +511,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         searchProducts,
         upsertItem,
         manageSavedRecipes,
+        editRecipe,
         createRecipe,
         deleteRecipe,
       }}

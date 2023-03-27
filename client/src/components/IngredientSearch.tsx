@@ -66,7 +66,10 @@ const IngredientSearch = ({ handleAdd }: searchProps) => {
         <div className="d-flex flex-column mt-1 w-100 gap-1 ms-1">
           {searchResults.map((result) => {
             return (
-              <div className="d-flex align-items-center w-100 gap-1 ">
+              <div
+                className="d-flex align-items-center w-100 gap-1 "
+                key={result.product}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"

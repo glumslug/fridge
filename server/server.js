@@ -378,7 +378,7 @@ app.post("/db/sources", async (req, res) => {
 app.get("/db/recipes/:id", async (req, res) => {
   const { id } = req.params;
   const sqlSelect =
-    "SELECT i.id as ingredient_id, p.id as product_id, p.name as name, i.amount as amount, un.short as unit_short, un.singular as unit_singular, un.plural as unit_plural from recipes r join ingredients i on r.id = i.recipe join products p on p.id = i.product join units un on un.id = i.unit where r.id = ?;";
+    "SELECT i.id as ingredient_id, p.id as product_id, p.name as name, i.amount as amount, i.unit as unit, un.short as unit_short, un.singular as unit_singular, un.plural as unit_plural from recipes r join ingredients i on r.id = i.recipe join products p on p.id = i.product join units un on un.id = i.unit where r.id = ?;";
   db.query(sqlSelect, [id], (err, result) => {
     if (err) {
       res.send(err);
@@ -472,6 +472,66 @@ app.get("/db/units", (req, res) => {
       res.send(result);
     }
   });
+});
+
+// edit recipe - bulk insert
+app.post("/db/recipes/edit/new", (req, res) => {
+  const { recipe, ingredients } = req.body;
+  const sqlSelect =
+    "INSERT INTO ingredients (product, recipe, amount, unit) values ?";
+
+  let values = [];
+  ingredients.map((g) => {
+    values.push([g.product_id, recipe, g.amount, g.unit]);
+  });
+  db.query(sqlSelect, [values], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+// edit recipe - BULK delete
+app.post("/db/recipes/edit/delete", (req, res) => {
+  const { recipe, ingredients } = req.body;
+  const sqlSelect = "DELETE FROM ingredients WHERE id in (?)";
+
+  let values = [];
+  ingredients.map((g) => {
+    values.push(g.ingredient_id);
+  });
+  db.query(sqlSelect, [values], (err, result) => {
+    if (err) {
+      res.send(err);
+    } else {
+      res.send(result);
+    }
+  });
+});
+
+// edit recipe - updates
+app.post("/db/recipes/edit/update", (req, res) => {
+  const { recipe, ingredient } = req.body;
+  const sqlSelect =
+    "UPDATE ingredients SET amount = ?, unit = (SELECT un.id FROM units un WHERE un.singular = ? ) WHERE product = ? AND recipe = ?";
+  db.query(
+    sqlSelect,
+    [
+      ingredient.amount,
+      ingredient.unit_singular,
+      ingredient.product_id,
+      recipe,
+    ],
+    (err, result) => {
+      if (err) {
+        res.send(err);
+      } else {
+        res.send(result);
+      }
+    }
+  );
 });
 
 // Generate JWT

@@ -3,6 +3,7 @@ import { Col, Row } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { toast } from "react-toastify";
+import { handleManageEdit } from "./detailsEditRow";
 
 type AmountModalProps = {
   show: boolean;
@@ -10,7 +11,7 @@ type AmountModalProps = {
   index: number;
   fractionize: (argo0: number) => string;
   handleClose: () => void;
-  handleManageEdit: (index: number, action: string, amount: number) => void;
+  handleManageEdit: ({ index, action, amount }: handleManageEdit) => void;
 };
 const AmountModal = ({
   show,
@@ -20,7 +21,6 @@ const AmountModal = ({
   handleClose,
   handleManageEdit,
 }: AmountModalProps) => {
-  const [calcAmount, setCalcAmount] = useState<number | null>(amount);
   let initDec = (amount - Math.floor(amount))
     .toFixed(3)
     .toString()
@@ -47,16 +47,17 @@ const AmountModal = ({
   //   "¾": 0.75,
   // };
 
-  const decConv = {
-    "00": 0,
-    "125": 0.125,
-    "25": 0.25,
-    "33": 0.333,
-    "50": 0.5,
-    "66": 0.666,
-    "75": 0.75,
-  };
+  // const decConv = {
+  //   "00": 0,
+  //   "125": 0.125,
+  //   "25": 0.25,
+  //   "33": 0.333,
+  //   "50": 0.5,
+  //   "66": 0.666,
+  //   "75": 0.75,
+  // };
 
+  // want to move to this to solve type error later on
   const decConvTable = [
     { display: "00", unicode: "0", value: 0 },
     { display: "125", unicode: "⅛", value: 0.125 },
@@ -82,14 +83,18 @@ const AmountModal = ({
     }
   };
   const calcAndSubmit = () => {
-    let dec = decConv[intDec.dec];
+    let dec = decConvTable.find((item) => item.display === intDec.dec)?.value;
+    if (dec === undefined) {
+      toast.error("Something went wrong");
+      return;
+    }
     let calc = intDec.int + dec;
 
     if (calc === 0) {
       toast.error("Amount can't be zero");
       return;
     }
-    handleManageEdit(index, "update", calc);
+    handleManageEdit({ index: index, action: "update", amount: calc });
     handleClose();
   };
 

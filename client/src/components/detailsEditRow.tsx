@@ -5,6 +5,7 @@ import { productSearchItem } from "../utilities/interfaces";
 import AmountModal from "./AmountModal";
 import IngredientSearch from "./IngredientSearch";
 import { ingredientList } from "./RecipeDetails";
+import UnitModal from "./UnitModal";
 
 type EditRowProps = {
   tempIngredients: ingredientList[] | null | undefined;
@@ -20,6 +21,20 @@ type AmountModalState = {
   amount: number;
 };
 
+type UnitModalState = {
+  index: number;
+  show: boolean;
+  unit: number;
+  displayUnit: string | undefined;
+};
+
+export interface handleManageEdit {
+  index: number;
+  action: string;
+  amount?: number;
+  unit?: number;
+}
+
 const DetailsEditRow = ({
   tempIngredients,
   setTempIngredients,
@@ -31,7 +46,12 @@ const DetailsEditRow = ({
     show: false,
     amount: 0,
   });
-  console.log(tempIngredients);
+  const [unitModal, setUnitModal] = useState<UnitModalState>({
+    index: 0,
+    show: false,
+    unit: 0,
+    displayUnit: undefined,
+  });
   // add an ingredient
   const handleAddIngredient = (result: productSearchItem) => {
     if (!tempIngredients) return;
@@ -39,27 +59,47 @@ const DetailsEditRow = ({
       product_id: result.product,
       name: result.name,
       amount: 1,
+      unit: 0,
+      unit_plural: undefined,
+      unit_short: undefined,
+      unit_singular: undefined,
       editStatus: "new",
     };
     setTempIngredients([...tempIngredients, newItem]);
   };
 
-  const handleManageEdit = (
-    index: number,
-    action: string,
-    amount?: number,
-    unit?: number
-  ) => {
+  const handleManageEdit = ({
+    index,
+    action,
+    amount,
+    unit,
+  }: handleManageEdit) => {
     if (!tempIngredients) return;
     let newTemp = JSON.parse(JSON.stringify(tempIngredients));
     switch (action) {
       case "delete":
-        newTemp[index].editStatus = "delete";
+        if (newTemp[index].editStatus === "new") {
+          newTemp.splice(index, 1);
+        } else {
+          newTemp[index].editStatus = "delete";
+        }
         setTempIngredients(newTemp);
         break;
       case "update":
-        newTemp[index].editStatus = "update";
-        newTemp[index].amount = amount;
+        if (newTemp[index].editStatus !== "new") {
+          newTemp[index].editStatus = "update";
+        }
+        if (amount) {
+          newTemp[index].amount = amount;
+        }
+        if (unit) {
+          console.log(unit);
+          let uDetails = units?.find((u) => u.id === unit);
+          newTemp[index].unit = unit;
+          newTemp[index].unit_plural = uDetails?.plural;
+          newTemp[index].unit_short = uDetails?.short;
+          newTemp[index].unit_singular = uDetails?.singular;
+        }
         setTempIngredients(newTemp);
       default:
         break;
@@ -76,6 +116,16 @@ const DetailsEditRow = ({
           index={amountModal.index}
           show={amountModal.show}
           handleClose={() => setAmountModal({ ...amountModal, show: false })}
+        />
+      )}
+      {unitModal.show && (
+        <UnitModal
+          handleManageEdit={handleManageEdit}
+          unit={unitModal.unit}
+          displayUnit={unitModal.displayUnit}
+          index={unitModal.index}
+          show={unitModal.show}
+          handleClose={() => setUnitModal({ ...unitModal, show: false })}
         />
       )}
       {/* Header Row */}
@@ -124,7 +174,7 @@ const DetailsEditRow = ({
                 fill="currentColor"
                 className="bi bi-dash-circle bright-fill-pink"
                 viewBox="0 0 16 16"
-                onClick={() => handleManageEdit(i, "delete")}
+                onClick={() => handleManageEdit({ index: i, action: "delete" })}
               >
                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
                 <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z" />
@@ -172,6 +222,14 @@ const DetailsEditRow = ({
                   background: "",
                 }}
                 className="px-2 d-flex align-items-center justify-content-center rounded bright-nb"
+                onClick={() =>
+                  setUnitModal({
+                    show: true,
+                    index: i,
+                    unit: g.unit,
+                    displayUnit: g.unit_short || undefined,
+                  })
+                }
               >
                 {g.unit_short ||
                   (g.amount > 1 ? g.unit_plural : g.unit_singular) ||

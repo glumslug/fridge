@@ -1,3 +1,5 @@
+import { Unit } from "convert-units";
+
 export interface productSearchItem {
   product: number;
   name: string;
@@ -28,6 +30,7 @@ export interface basketData {
 export interface basketItem {
   product: number;
   amount: number;
+  unit: Unit;
 }
 
 export interface items {
@@ -43,6 +46,7 @@ export interface item {
   bin: string;
   quantity: number;
   product: number;
+  unit: Unit;
 }
 
 export interface item_generic {
@@ -51,6 +55,7 @@ export interface item_generic {
   bin: string;
   quantity: number;
   product: number;
+  unit: Unit;
 }
 
 export interface shoppingList {
@@ -65,6 +70,7 @@ export interface cart_item {
   name: string;
   product: number;
   quantity: number;
+  unit: Unit;
 }
 
 export interface recipe {
@@ -82,7 +88,7 @@ export interface ingredient {
   name: string;
   amount: number;
   unit: number;
-  unit_short: string | null;
+  unit_short: Unit | null;
   unit_singular: string;
   unit_plural: string;
 }

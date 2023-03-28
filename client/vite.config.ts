@@ -19,6 +19,9 @@ export default defineConfig({
     },
     host: true,
   },
+  define: {
+    global: {},
+  },
   plugins: [react()],
   build: { manifest: true, outDir: "./dist" },
   root: "./",

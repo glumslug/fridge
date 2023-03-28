@@ -21,10 +21,11 @@ const ShelfItem = ({ item, handleShow }: itemProps) => {
     >
       <div>{item.name}</div>
       <div
-        style={{ width: "1.5rem", background: "#AB6969" }}
-        className="text-center rounded"
+        style={{ background: "#AB6969" }}
+        className="d-flex text-center rounded px-1 gap-1"
       >
-        {item.quantity}
+        <span>{item.quantity}</span>
+        <span>{item.unit}</span>
       </div>
     </Card>
   );

@@ -15,6 +15,7 @@ import {
   CardGroup,
   Container,
   Button,
+  Col,
 } from "react-bootstrap";
 import StoreModal from "../components/StoreModal";
 import { useAuth } from "../context/AuthContext";
@@ -160,7 +161,7 @@ const Store = () => {
         style={{ gap: "4px", maxWidth: "40rem" }}
         className="d-flex flex-wrap justify-content-between"
       >
-        <Row
+        <div
           id="stockBox"
           style={{
             minHeight: "7rem",
@@ -177,7 +178,7 @@ const Store = () => {
           {shoppingList
             ? bins.map((bin, i) => {
                 return (
-                  <div key={bin} className="w-100">
+                  <div key={bin} className="px-1 w-100">
                     {/* Bin title */}
                     {binCart[bin].length > 0 && (
                       <div
@@ -190,12 +191,17 @@ const Store = () => {
                       </div>
                     )}
                     {/* Bin items */}
-                    <div className="row w-100">
+                    <Row className="g-0 row w-100 justify-content-start justify-content-xs-center">
                       {binCart[bin].map((item: cart_item, i: number) => {
                         return (
-                          <div
-                            className="col-md-4 col-6 d-flex align-items-center"
-                            style={{ gap: "10px", marginBottom: "5px" }}
+                          <Col
+                            xs={"6"}
+                            md={"4"}
+                            className="py-1 d-flex align-items-center"
+                            style={{
+                              gap: "3px",
+                              marginBottom: "5px",
+                            }}
                             key={`${bin}${i}`}
                           >
                             <input
@@ -204,38 +210,38 @@ const Store = () => {
                               onChange={(e) =>
                                 handleCheck(item, e.target.checked)
                               }
+                              style={{ marginRight: "5px", marginLeft: "10px" }}
                             />
                             <Card
                               style={{
-                                width: "8rem",
                                 background: "black",
-                                gap: "10px",
-                                padding: "3px 8px",
+                                gap: "5px",
+                                padding: "3px 2px 3px 8px",
                               }}
-                              className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center flex-nowrap "
+                              className="w-100 item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center flex-nowrap "
                               onClick={() => handleShow(item)}
                             >
                               <div className="text-truncate">{item.name}</div>
                               <div
                                 style={{
-                                  minWidth: "1.5rem",
                                   background: "#AB6969",
                                 }}
-                                className="text-center rounded"
+                                className="d-flex text-center rounded px-1 gap-1"
                               >
-                                {item.quantity}
+                                <span>{item.quantity}</span>
+                                <span>{item.unit}</span>
                               </div>
                             </Card>
-                          </div>
+                          </Col>
                         );
                       })}
-                    </div>
+                    </Row>
                   </div>
                 );
               })
             : null}
-        </Row>
-        <Row
+        </div>
+        <div
           style={{
             maxWidth: "40rem",
             width: "40rem",
@@ -261,7 +267,7 @@ const Store = () => {
           >
             Checkout
           </Button>
-        </Row>
+        </div>
       </div>
     </div>
   );

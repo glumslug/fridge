@@ -8,6 +8,7 @@ import YesNoModal from "./YesNoModal";
 import IngredientSearch from "./IngredientSearch";
 import DetailsDisplayRow from "./detailsDisplayRow";
 import DetailsEditRow from "./detailsEditRow";
+import conversionMachine from "../utilities/conversionMachine";
 
 type RecipeDetailsProps = {
   recipe: recipe;
@@ -81,17 +82,30 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
         const response = await axios.get("/db/recipes/" + id);
         if (response.data) {
           if (userData) {
+            console.log(response.data);
             let arr: ingredientList[] = [];
             response.data.map((ingredient: ingredient) => {
-              let stockStatus = userData.items.some(
+              let stockStatus = "";
+              let itemComp = userData.items.find(
                 (item) => item.product == ingredient.product_id
-              )
-                ? "status-green"
-                : userData.cart.some(
-                    (item) => item.product == ingredient.product_id
-                  )
-                ? "status-blue"
-                : "status-grey";
+              );
+              let cartComp = userData.cart.find(
+                (item) => item.product == ingredient.product_id
+              );
+              let itemConv = 0;
+              let cartConv = 0;
+              console.log(itemComp);
+              console.log(cartComp);
+              console.log(itemConv);
+              console.log(cartConv);
+              stockStatus =
+                itemComp === undefined && cartComp === undefined
+                  ? "status-grey"
+                  : itemConv >= ingredient.amount
+                  ? "status-green"
+                  : itemConv + cartConv > ingredient.amount
+                  ? "status-blue"
+                  : "status-orange";
               let temp: ingredientList = {
                 ...ingredient,
                 stockStatus: stockStatus,

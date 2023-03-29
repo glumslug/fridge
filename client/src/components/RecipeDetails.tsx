@@ -9,6 +9,7 @@ import IngredientSearch from "./IngredientSearch";
 import DetailsDisplayRow from "./detailsDisplayRow";
 import DetailsEditRow from "./detailsEditRow";
 import conversionMachine from "../utilities/conversionMachine";
+import { Unit } from "convert-units";
 
 type RecipeDetailsProps = {
   recipe: recipe;
@@ -22,14 +23,14 @@ export interface ingredientList {
   name: string;
   amount: number;
   unit: number;
-  unit_short?: string | null;
-  unit_singular?: string;
-  unit_plural?: string;
-  stockStatus?: string;
+  unit_short: Unit;
+  unit_singular: string;
+  unit_plural: string;
+  stockStatus: string;
   editStatus: string | null;
 }
 
-type BodyUl = { name: string; amount: number };
+type BodyUl = { name: string; amount: number; unit: Unit };
 type ModalProps = {
   show: boolean;
   message: {
@@ -64,10 +65,11 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
   const [edit, setEdit] = useState(false);
   const {
     userData,
-    bulkCartAdd,
+    upsertCart,
     manageSavedRecipes,
     deleteRecipe,
     editRecipe,
+    refreshContext,
   } = useAuth();
   const mySaved = userData?.savedRecipes.some((rec) => rec.id == recipe.id);
   const [modal, setModal] = useState<ModalProps>(emptyModal);
@@ -94,23 +96,19 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
 
               let itemConv = conversionMachine({
                 source: itemComp?.unit,
-                target: ingredient?.unit_short || undefined,
-                amount: ingredient.amount,
+                target: ingredient?.unit_short,
+                amount: itemComp?.quantity || 0,
               });
               let cartConv = conversionMachine({
                 source: cartComp?.unit,
-                target: ingredient?.unit_short || undefined,
-                amount: ingredient.amount,
+                target: ingredient?.unit_short,
+                amount: cartComp?.quantity || 0,
               });
-              console.log();
-              console.log(itemComp);
-              console.log(cartComp);
-              console.log(itemConv);
-              console.log(cartConv);
+              console.table({ itemComp, cartComp, itemConv, cartConv });
               let stockStatus =
                 itemComp === undefined && cartComp === undefined
                   ? "status-grey"
-                  : ingredient.amount >= itemConv
+                  : ingredient.amount <= itemConv
                   ? "status-green"
                   : itemConv + cartConv > ingredient.amount
                   ? "status-blue"
@@ -153,16 +151,44 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     // [[owner, product, quantity]]
     // This is going to mess up if item is already in cart, I should create an upsert,
     if (!userId) return;
-    let arr: number[][] = [];
+    let arr: ingredientList[] = [];
     let body: BodyUl[] = [];
     ingredients?.map((g) => {
-      if (g.stockStatus == "status-grey") {
-        arr.push([userId, g.product_id, g.amount]);
-        body.push({ name: g.name, amount: g.amount });
+      if (g.stockStatus == "status-grey" || g.stockStatus == "status-orange") {
+        arr.push(g);
+        body.push({ name: g.name, amount: g.amount, unit: g.unit_short });
       }
     });
-    const handleAdd = () => {
-      bulkCartAdd({ values: arr });
+    const handleAdd = async () => {
+      let total = 0;
+      await Promise.all(
+        arr.map(async (g) => {
+          let cartItem = userData.cart.find(
+            (ci) => ci.product === g.product_id
+          );
+          let newAmount;
+          let newUnit;
+          if (cartItem === undefined) {
+            newAmount = g.amount;
+            newUnit = g.unit_short;
+          } else {
+            newAmount = conversionMachine({
+              target: cartItem.unit,
+              source: g.unit_short,
+              amount: g.amount,
+            });
+            newUnit = cartItem.unit;
+          }
+          total += 1;
+          let res = await upsertCart({
+            product: g.product_id,
+            amount: newAmount,
+            unit: newUnit,
+          });
+        })
+      );
+      refreshContext("purchase");
+      toast.success(`Successfully added ${total} items.`);
       setModal({ ...modal, show: false });
     };
     add

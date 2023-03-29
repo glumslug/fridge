@@ -25,7 +25,7 @@ const ShelfItem = ({ item, handleShow }: itemProps) => {
         className="d-flex text-center rounded px-1 gap-1"
       >
         <span>{item.quantity}</span>
-        <span>{item.unit}</span>
+        <span className="text-nowrap">{item.unit}</span>
       </div>
     </Card>
   );

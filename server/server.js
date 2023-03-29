@@ -79,9 +79,9 @@ app.post("/db/delete-item", (req, res) => {
 
 //Upsert Item
 app.post("/db/upsertItem", (req, res) => {
-  const { product, owner, quantity } = req.body;
-  const sqlSelect = "CALL upsertItem(?,?,?);";
-  db.query(sqlSelect, [product, owner, quantity], (err, result) => {
+  const { product, owner, quantity, unit } = req.body;
+  const sqlSelect = "CALL upsertItem(?,?,?,?);";
+  db.query(sqlSelect, [product, owner, quantity, unit], (err, result) => {
     if (err) {
       res.send(err);
     } else {
@@ -92,9 +92,9 @@ app.post("/db/upsertItem", (req, res) => {
 
 //Upsert cart item
 app.post("/db/upsertCart", (req, res) => {
-  const { product, owner, quantity } = req.body;
-  const sqlSelect = "CALL upsertCart(?,?,?);";
-  db.query(sqlSelect, [product, owner, quantity], (err, result) => {
+  const { product, owner, quantity, unit } = req.body;
+  const sqlSelect = "CALL upsertCart(?,?,?,?);";
+  db.query(sqlSelect, [product, owner, quantity, unit], (err, result) => {
     if (err) {
       res.send(err);
     } else {
@@ -150,19 +150,6 @@ app.post("/db/cart/add", protect, (req, res) => {
   const sqlInsert =
     "insert into cart (owner, product, quantity) values (?, ?, ?);";
   db.query(sqlInsert, [req.user, product, quantity], (err, result) => {
-    if (err) {
-      res.send(err);
-    } else {
-      res.send(result);
-    }
-  });
-});
-
-//Add multiple cart_item STILL USING???
-app.post("/db/cart/bulkAdd", protect, (req, res) => {
-  const { values } = req.body;
-  const sqlInsert = "insert into cart (owner, product, quantity) values ?;";
-  db.query(sqlInsert, [values], (err, result) => {
     if (err) {
       res.send(err);
     } else {

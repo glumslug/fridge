@@ -24,7 +24,7 @@ const conversionMachine = ({
     return amount;
   }
   let cf = convert(amount).from(source).to(target);
-  console.log("converted");
+  console.log("converted", cf);
   return cf;
 };
 

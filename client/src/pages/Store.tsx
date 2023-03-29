@@ -21,6 +21,7 @@ import StoreModal from "../components/StoreModal";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import ProductSearch from "../components/ProductSearch";
+import conversionMachine from "../utilities/conversionMachine";
 
 const Store = () => {
   const {
@@ -34,12 +35,18 @@ const Store = () => {
 
   const [isChecked, setIsChecked] = useState<number[]>([]);
   const shoppingList = userData?.cart;
-  const binCart = {
-    freezer: shoppingList?.filter((item) => item.bin == "freezer"),
-    fridge: shoppingList?.filter((item) => item.bin == "fridge"),
-    pantry: shoppingList?.filter((item) => item.bin == "pantry"),
-    closet: shoppingList?.filter((item) => item.bin == "closet"),
-  };
+  // const binCart = {
+  //   freezer: shoppingList?.filter((item) => item.bin == "freezer") || [],
+  //   fridge: shoppingList?.filter((item) => item.bin == "fridge") || [],
+  //   pantry: shoppingList?.filter((item) => item.bin == "pantry") || [],
+  //   closet: shoppingList?.filter((item) => item.bin == "closet") || [],
+  // };
+  const binCart: cart_item[][] = [
+    shoppingList?.filter((item) => item.bin == "freezer") || [],
+    shoppingList?.filter((item) => item.bin == "fridge") || [],
+    shoppingList?.filter((item) => item.bin == "pantry") || [],
+    shoppingList?.filter((item) => item.bin == "closet") || [],
+  ];
   const bins = ["freezer", "fridge", "pantry", "closet"];
   const homeList = userData?.items;
   const [amount, setAmount] = useState<number>(1);
@@ -83,12 +90,14 @@ const Store = () => {
         product: selectedItem.product,
         amount: amount,
         action: action,
+        unit: selectedItem.unit,
       });
     }
     manageCart({
       product: selectedItem.product,
       amount: amount,
       action: action,
+      unit: selectedItem.unit,
     });
 
     handleClose();
@@ -100,9 +109,9 @@ const Store = () => {
       product: item.product,
       amount: item.quantity,
       action: action,
+      unit: item.unit,
     });
   };
-
   const handleAdd = (result: productSearchItem) => {
     // Check if already in cart
     const exists = shoppingList?.some(
@@ -115,19 +124,44 @@ const Store = () => {
       return;
     }
 
-    manageCart({ product: result.product, amount: 1, action: "add" });
+    manageCart({
+      product: result.product,
+      amount: 1,
+      action: "add",
+      unit: "fl-oz",
+    });
   };
 
   const handlePurchase = async () => {
     let total = 0;
-    const basket = JSON.parse(localStorage.getItem("basket"));
-    console.log(basket);
+    const localBasket = localStorage.getItem("basket");
+    const basket = localBasket ? JSON.parse(localBasket) : [];
+
     const response = await Promise.all(
       basket.items.map(async (item: basketItem) => {
         total += 1;
+        let homeItem = userData?.items.find(
+          (hi) => hi.product === item.product
+        );
+        let newUnit;
+        let newAmount;
+        console.log(homeItem);
+        if (homeItem === undefined) {
+          newAmount = item.amount;
+          newUnit = item.unit;
+        } else {
+          newAmount = conversionMachine({
+            amount: item.amount,
+            source: item.unit,
+            target: homeItem.unit,
+          });
+          newUnit = homeItem.unit;
+        }
+
         let res = await upsertItem({
           product: item.product,
-          amount: item.amount,
+          amount: newAmount,
+          unit: newUnit,
         });
         return res?.message;
       })
@@ -173,14 +207,13 @@ const Store = () => {
             gap: "12px",
           }}
           className="shadow-lg mt-3 mx-1 position-relative p-2 w-100 rounded d-flex flex-column align-items-start "
-          sm={5}
         >
           {shoppingList
             ? bins.map((bin, i) => {
                 return (
                   <div key={bin} className="px-1 w-100">
                     {/* Bin title */}
-                    {binCart[bin].length > 0 && (
+                    {binCart !== undefined && binCart[i].length > 0 && (
                       <div
                         style={{
                           borderBottom: "2px solid #A1D3FF",
@@ -192,7 +225,7 @@ const Store = () => {
                     )}
                     {/* Bin items */}
                     <Row className="g-0 row w-100 justify-content-start justify-content-xs-center">
-                      {binCart[bin].map((item: cart_item, i: number) => {
+                      {binCart[i].map((item: cart_item, i: number) => {
                         return (
                           <Col
                             xs={"6"}
@@ -229,7 +262,7 @@ const Store = () => {
                                 className="d-flex text-center rounded px-1 gap-1"
                               >
                                 <span>{item.quantity}</span>
-                                <span>{item.unit}</span>
+                                <span className="text-nowrap">{item.unit}</span>
                               </div>
                             </Card>
                           </Col>

@@ -19,6 +19,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import YesNoModal from "../components/YesNoModal";
 import { ingredientList } from "../components/RecipeDetails";
+import { Unit } from "convert-units";
 
 type credentials = {
   email: string;
@@ -30,6 +31,7 @@ type CRUD = {
   product: number;
   atHome?: number;
   amount: number;
+  unit: Unit;
   action?: string;
 };
 
@@ -97,9 +99,17 @@ type AuthContext = {
     amount,
     action,
   }: CRUD) => Promise<notSelect | undefined>;
-  bulkCartAdd: ({ values }: bulkAddProps) => Promise<notSelect | undefined>;
   manageBasket: ({ product, amount, action }: CRUD) => void;
-  upsertItem: ({ product, amount }: CRUD) => Promise<notSelect | undefined>;
+  upsertItem: ({
+    product,
+    amount,
+    unit,
+  }: CRUD) => Promise<notSelect | undefined>;
+  upsertCart: ({
+    product,
+    amount,
+    unit,
+  }: CRUD) => Promise<notSelect | undefined>;
   downsertItem: ({ product, amount }: CRUD) => Promise<notSelect | undefined>;
   createRecipe: ({
     title,
@@ -267,7 +277,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // Add things to your shopping list **probably should refactor to call this list
-  const manageCart = async ({ product, amount, action }: CRUD) => {
+  const manageCart = async ({ product, amount, action, unit }: CRUD) => {
     // action is add, remove, or update
     const add = await axios({
       url: "/db/cart/" + action,
@@ -279,6 +289,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       data: {
         product: product,
         quantity: amount,
+        unit: unit,
       },
     });
     if (add.data) {
@@ -293,31 +304,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  // Add things to your shopping list in bulk
-  const bulkCartAdd = async ({ values }: bulkAddProps) => {
-    // action is add, remove, or update
-    const add = await axios({
-      url: "/db/cart/bulkAdd",
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${userData?.token}`,
-        "Content-Type": "application/json",
-      },
-      data: {
-        values: values,
-      },
-    });
-    if (add.data) {
-      if (add.data.warningStatus == 0) {
-        toast.success(`Items added successfully.`);
-        refreshContext();
-      } else {
-        return { message: "Something went wrong!" };
-      }
-    }
-  };
-
-  const manageBasket = ({ product, amount, action }: CRUD) => {
+  const manageBasket = ({ product, amount, action, unit }: CRUD) => {
     // This is for when you're shopping, adding things to your purchase order
     const localBasket = localStorage.getItem("basket");
     const basket = localBasket ? JSON.parse(localBasket) : { items: [] };
@@ -327,7 +314,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     console.log(action);
     switch (action) {
       case "add":
-        basket.items.push({ product, amount });
+        basket.items.push({ product, amount, unit });
         localStorage.setItem("basket", JSON.stringify(basket));
         setBasketData(basket);
         break;
@@ -338,6 +325,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         break;
       case "update":
         basket.items[index].amount = amount;
+        basket.items[index].unit = unit;
         localStorage.setItem("basket", JSON.stringify(basket));
         break;
       default:
@@ -345,15 +333,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const upsertItem = async ({ product, amount }: CRUD) => {
+  const upsertItem = async ({ product, amount, unit }: CRUD) => {
     const add = await axios.post(`/db/upsertItem`, {
       product: product,
       owner: userData?.id,
       quantity: amount,
+      unit: unit,
     });
     console.log(userData?.id, product);
     if (add.data) {
       return { message: "Successfully upserted item." };
+      // refreshContext("purchase");
+    } else {
+      return { message: "Something went wrong!" };
+    }
+  };
+
+  const upsertCart = async ({ product, amount, unit }: CRUD) => {
+    const add = await axios.post("/db/upsertCart", {
+      product: product,
+      owner: userData?.id,
+      quantity: amount,
+      unit: unit,
+    });
+    console.log(userData?.id, product);
+    if (add.data) {
+      return { message: "Successfully added cart item." };
       // refreshContext("purchase");
     } else {
       return { message: "Something went wrong!" };
@@ -539,12 +544,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         registerUser,
         logoutUser,
         manageCart,
-        bulkCartAdd,
         manageBasket,
         downsertItem,
         refreshContext,
         searchProducts,
         upsertItem,
+        upsertCart,
         manageSavedRecipes,
         editRecipe,
         createRecipe,

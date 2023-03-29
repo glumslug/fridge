@@ -88,7 +88,7 @@ export interface ingredient {
   name: string;
   amount: number;
   unit: number;
-  unit_short: Unit | null;
+  unit_short: Unit;
   unit_singular: string;
   unit_plural: string;
 }

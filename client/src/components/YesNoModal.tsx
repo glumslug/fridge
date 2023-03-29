@@ -1,8 +1,10 @@
+import { Unit } from "convert-units";
 import React, { useEffect, useState } from "react";
+import { Col, Row, Table } from "react-bootstrap";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 
-type BodyUl = { name: string; amount: number };
+type BodyUl = { name: string; amount: number; unit: Unit };
 type YesNoModalProps = {
   show: boolean;
   message: {
@@ -32,15 +34,26 @@ const YesNoModal = ({
           {message.body.pre}
           <span className="spanYN">{message.body.span}</span>
           {message.body.post}
-          <ul>
-            {message.body.ul?.map((m) => {
-              return (
-                <li key={m.name}>
-                  <span className="spanYN">{m.amount}x</span> {m.name}
-                </li>
-              );
-            })}
-          </ul>
+          {message.body.ul && (
+            <Table striped bordered variant="dark">
+              <thead className="spanYN">
+                <th className="ps-2">Ingredient</th>
+                <th className="text-center">Amount</th>
+                <th className="text-center">Unit</th>
+              </thead>
+              <tbody>
+                {message.body.ul?.map((m) => {
+                  return (
+                    <tr key={m.name}>
+                      <td>{m.name}</td>
+                      <td className="spanYN text-center">{m.amount}</td>
+                      <td className="spanYN text-center">{m.unit}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </Table>
+          )}
         </Modal.Body>
         <Modal.Footer
           className="bg-black bright-active"

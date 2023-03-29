@@ -85,23 +85,32 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
             console.log(response.data);
             let arr: ingredientList[] = [];
             response.data.map((ingredient: ingredient) => {
-              let stockStatus = "";
               let itemComp = userData.items.find(
                 (item) => item.product == ingredient.product_id
               );
               let cartComp = userData.cart.find(
                 (item) => item.product == ingredient.product_id
               );
-              let itemConv = 0;
-              let cartConv = 0;
+
+              let itemConv = conversionMachine({
+                source: itemComp?.unit,
+                target: ingredient?.unit_short || undefined,
+                amount: ingredient.amount,
+              });
+              let cartConv = conversionMachine({
+                source: cartComp?.unit,
+                target: ingredient?.unit_short || undefined,
+                amount: ingredient.amount,
+              });
+              console.log();
               console.log(itemComp);
               console.log(cartComp);
               console.log(itemConv);
               console.log(cartConv);
-              stockStatus =
+              let stockStatus =
                 itemComp === undefined && cartComp === undefined
                   ? "status-grey"
-                  : itemConv >= ingredient.amount
+                  : ingredient.amount >= itemConv
                   ? "status-green"
                   : itemConv + cartConv > ingredient.amount
                   ? "status-blue"

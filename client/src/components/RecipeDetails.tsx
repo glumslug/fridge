@@ -23,11 +23,11 @@ export interface ingredientList {
   name: string;
   amount: number;
   unit: number;
-  unit_short: Unit;
-  unit_singular: string;
-  unit_plural: string;
-  stockStatus: string | null;
-  editStatus: string | null;
+  unit_short: Unit | undefined;
+  unit_singular: string | undefined;
+  unit_plural: string | undefined;
+  stockStatus?: string | undefined;
+  editStatus: string | null | undefined;
 }
 
 type BodyUl = { name: string; amount: number; unit: Unit };

@@ -1,3 +1,4 @@
+import { Unit } from "convert-units";
 import React, { useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
@@ -60,11 +61,10 @@ const DetailsEditRow = ({
       name: result.name,
       amount: 1,
       unit: 0,
-      unit_plural: "",
-      unit_short: "fl-oz",
-      unit_singular: "",
+      unit_plural: undefined,
+      unit_short: undefined,
+      unit_singular: undefined,
       editStatus: "new",
-      stockStatus: null,
     };
     setTempIngredients([...tempIngredients, newItem]);
   };

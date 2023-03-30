@@ -18,7 +18,7 @@ const Login = () => {
   const setField = (field: string, value: string) => {
     setForm({ ...form, [field]: value });
   };
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLButtonElement>) => {
     e.preventDefault();
     const { email, password } = form;
     if (!email) {
@@ -52,7 +52,11 @@ const Login = () => {
         />
       </Form.Group>
 
-      <Button variant="primary" type="submit" onClick={(e) => handleSubmit(e)}>
+      <Button
+        variant="primary"
+        type="submit"
+        onClick={(e: React.FormEvent<HTMLButtonElement>) => handleSubmit(e)}
+      >
         Login
       </Button>
     </Form>

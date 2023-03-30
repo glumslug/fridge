@@ -15,7 +15,7 @@ function Register() {
   });
   const { registerUser } = useAuth();
 
-  const submitRegistration = async (e: React.FormEvent<HTMLFormElement>) => {
+  const submitRegistration = async (e: React.FormEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!info.email) {
       toast.error("Please provide an email.");
@@ -96,7 +96,9 @@ function Register() {
       <Button
         variant="primary"
         type="button"
-        onClick={(e: React.FormEvent<HTMLFormElement>) => submitRegistration(e)}
+        onClick={(e: React.FormEvent<HTMLButtonElement>) =>
+          submitRegistration(e)
+        }
       >
         Register
       </Button>

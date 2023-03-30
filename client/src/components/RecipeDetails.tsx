@@ -26,7 +26,7 @@ export interface ingredientList {
   unit_short: Unit;
   unit_singular: string;
   unit_plural: string;
-  stockStatus: string;
+  stockStatus: string | null;
   editStatus: string | null;
 }
 

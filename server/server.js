@@ -9,7 +9,7 @@ import bcrypt from "bcrypt";
 import { protect } from "./authMiddleware.js";
 dotenv.config();
 
-const port = 3000;
+const port = process.env.PORT;
 const app = express();
 const db =
   process.env.NODE_ENV === "development"

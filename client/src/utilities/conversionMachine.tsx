@@ -1,8 +1,8 @@
 import convert, { Unit } from "convert-units";
 type conversionMachineProps = {
   amount: number;
-  source: Unit | null | undefined;
-  target: Unit | null | undefined;
+  source: Unit | undefined;
+  target: Unit | undefined;
 };
 
 const conversionMachine = ({
@@ -17,10 +17,6 @@ const conversionMachine = ({
   }
   if (source === target) {
     console.log("same unit, no conversion needed");
-    return amount;
-  }
-  if (source === null || target === null) {
-    console.log("non-unit unit, e.g. clove or pinch");
     return amount;
   }
   let cf = convert(amount).from(source).to(target);

@@ -35,14 +35,15 @@ type CRUD = {
   action?: string;
 };
 
+type downsertItem = {
+  product: number;
+  amount: number;
+};
+
 type CreateRecipeProps = {
   title: string;
   cuisine: number | null;
   source: number | null;
-};
-
-type bulkAddProps = {
-  values: number[][];
 };
 
 type AuthProviderProps = {
@@ -110,7 +111,10 @@ type AuthContext = {
     amount,
     unit,
   }: CRUD) => Promise<notSelect | undefined>;
-  downsertItem: ({ product, amount }: CRUD) => Promise<notSelect | undefined>;
+  downsertItem: ({
+    product,
+    amount,
+  }: downsertItem) => Promise<notSelect | undefined>;
   createRecipe: ({
     title,
     cuisine,
@@ -251,8 +255,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     navigate(0);
   };
 
-  // downsert item -- for use/toss items in home tab
-  const downsertItem = async ({ product, amount }: CRUD) => {
+  // downsert item -- for use/toss items in home tab and Cook function in recipes
+  const downsertItem = async ({ product, amount }: downsertItem) => {
     const add = await axios({
       url: "/db/downsertItem",
       method: "POST",

@@ -9,7 +9,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Home = () => {
-  const { userData, downsertItem } = useAuth();
+  const { userData, downsertItem, refreshContext } = useAuth();
   const binData = {
     freezer: userData?.items.filter((item) => item.bin == "freezer"),
     fridge: userData?.items.filter((item) => item.bin == "fridge"),
@@ -51,6 +51,7 @@ const Home = () => {
       amount: amount,
     });
     if (result?.message) {
+      refreshContext();
       toast.success(result.message);
     }
   };

@@ -46,6 +46,17 @@ const emptyModal = {
   action: () => alert("Empty"),
 };
 
+type upsert = {
+  amount: number;
+  product: number;
+  unit: Unit;
+};
+
+type downsert = {
+  amount: number;
+  product: number;
+};
+
 // Recipe Details strategy:
 
 // 1. Abstract Recipe Details rows into 2 components: detailsEditRow and detailsDisplayRow
@@ -62,10 +73,13 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
   const [tempIngredients, setTempIngredients] = useState<
     ingredientList[] | null
   >();
+  const [checkoutArray, setCheckoutArray] = useState<upsert[]>([]);
+  const [checkoutModal, setCheckoutModal] = useState<BodyUl[]>([]);
   const [edit, setEdit] = useState(false);
   const {
     userData,
     upsertCart,
+    downsertItem,
     manageSavedRecipes,
     deleteRecipe,
     editRecipe,
@@ -85,43 +99,110 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
         if (response.data) {
           if (userData) {
             console.log(response.data);
-            let arr: ingredientList[] = [];
+            let statusArray: ingredientList[] = [];
+            let missingArray: upsert[] = [];
+            let modalArray: BodyUl[] = [];
             response.data.map((ingredient: ingredient) => {
-              let itemComp = userData.items.find(
+              let homeItem = userData.items.find(
                 (item) => item.product == ingredient.product_id
               );
-              let cartComp = userData.cart.find(
+              let cartItem = userData.cart.find(
                 (item) => item.product == ingredient.product_id
               );
+              // express home item in ingredient units
+              let x_home = conversionMachine({
+                source: homeItem?.unit,
+                target: ingredient?.unit_short,
+                amount: homeItem?.quantity || 0,
+              });
 
-              let itemConv = conversionMachine({
-                source: itemComp?.unit,
+              // express cart item in ingedient units
+              let x_cart = conversionMachine({
+                source: cartItem?.unit,
                 target: ingredient?.unit_short,
-                amount: itemComp?.quantity || 0,
+                amount: cartItem?.quantity || 0,
               });
-              let cartConv = conversionMachine({
-                source: cartComp?.unit,
-                target: ingredient?.unit_short,
-                amount: cartComp?.quantity || 0,
-              });
-              console.table({ itemComp, cartComp, itemConv, cartConv });
-              let stockStatus =
-                itemComp === undefined && cartComp === undefined
-                  ? "status-grey"
-                  : ingredient.amount <= itemConv
-                  ? "status-green"
-                  : itemConv + cartConv > ingredient.amount
-                  ? "status-blue"
-                  : "status-orange";
-              let temp: ingredientList = {
+              console.table({ homeItem, cartItem, x_home, x_cart });
+              let stockStatus;
+              let newAmount;
+              let newUnit;
+              if (homeItem === undefined && cartItem === undefined) {
+                stockStatus = "status-grey";
+                newAmount = ingredient.amount;
+                newUnit = ingredient.unit_short;
+              } else if (x_home >= ingredient.amount) {
+                stockStatus = "status-green";
+              } else if (x_home + x_cart >= ingredient.amount) {
+                stockStatus = "status-blue";
+              } else {
+                stockStatus = "status-orange";
+                // condition 1: in cart, not enough, not at home
+                if (homeItem === undefined && cartItem !== undefined) {
+                  newAmount =
+                    conversionMachine({
+                      target: cartItem.unit,
+                      source: ingredient.unit_short,
+                      amount: ingredient.amount,
+                    }) - cartItem.quantity;
+
+                  newUnit = cartItem.unit;
+                }
+                // condition 2: at home, not enough, not in cart
+                if (cartItem === undefined && homeItem !== undefined) {
+                  newAmount =
+                    conversionMachine({
+                      target: homeItem.unit,
+                      source: ingredient.unit_short,
+                      amount: ingredient.amount,
+                    }) - homeItem.quantity;
+
+                  newUnit = homeItem.unit;
+                }
+                // condition 3: at home, in cart, not enough
+                if (homeItem !== undefined && cartItem !== undefined) {
+                  // convert all to cartUnits, amount = ingredient(cartUnit) - homeItem(cartUnit) - cartItem
+                  newAmount =
+                    conversionMachine({
+                      target: cartItem.unit,
+                      source: ingredient.unit_short,
+                      amount: ingredient.amount,
+                    }) -
+                    conversionMachine({
+                      target: cartItem.unit,
+                      source: homeItem.unit,
+                      amount: homeItem.quantity,
+                    }) -
+                    cartItem.quantity;
+
+                  newUnit = cartItem.unit;
+                }
+              }
+
+              let tempStatus: ingredientList = {
                 ...ingredient,
                 stockStatus: stockStatus,
                 editStatus: null,
               };
-              arr.push(temp);
+              statusArray.push(tempStatus);
+
+              if (newAmount !== undefined && newUnit !== undefined) {
+                missingArray.push({
+                  amount: newAmount,
+                  product: ingredient.product_id,
+                  unit: newUnit,
+                });
+                modalArray.push({
+                  name: ingredient.name,
+                  amount: ingredient.amount,
+                  unit: ingredient.unit_short,
+                });
+              }
             });
-            setIngredients(arr);
-            setTempIngredients(arr);
+
+            setIngredients(statusArray);
+            setTempIngredients(statusArray);
+            setCheckoutArray(missingArray);
+            setCheckoutModal(modalArray);
             console.log("Refreshed recipe details");
           }
         }
@@ -146,66 +227,81 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
     return str;
   };
 
-  // CONFUSING! refactor
-  const handleShop = (add?: boolean) => {
-    // [[owner, product, quantity]]
-    // This is going to mess up if item is already in cart, I should create an upsert,
-    if (!userId) return;
-    let arr: ingredientList[] = [];
-    let body: BodyUl[] = [];
-    ingredients?.map((g) => {
-      if (g.stockStatus == "status-grey" || g.stockStatus == "status-orange") {
-        arr.push(g);
-        body.push({ name: g.name, amount: g.amount, unit: g.unit_short });
-      }
-    });
-    const handleAdd = async () => {
-      let total = 0;
-      await Promise.all(
-        arr.map(async (g) => {
-          let cartItem = userData.cart.find(
-            (ci) => ci.product === g.product_id
-          );
-          let newAmount;
-          let newUnit;
-          if (cartItem === undefined) {
-            newAmount = g.amount;
-            newUnit = g.unit_short;
-          } else {
-            newAmount = conversionMachine({
-              target: cartItem.unit,
-              source: g.unit_short,
-              amount: g.amount,
-            });
-            newUnit = cartItem.unit;
-          }
-          total += 1;
-          let res = await upsertCart({
-            product: g.product_id,
-            amount: newAmount,
-            unit: newUnit,
-          });
-        })
-      );
-      refreshContext("purchase");
-      toast.success(`Successfully added ${total} items.`);
-      setModal({ ...modal, show: false });
-    };
-    add
-      ? handleAdd()
-      : body.length > 0
+  // add missing items to cart
+  const handleAdd = async () => {
+    await Promise.all(
+      checkoutArray.map(async (g) => {
+        let res = await upsertCart({
+          product: g.product,
+          amount: g.amount,
+          unit: g.unit,
+        });
+      })
+    );
+    refreshContext("purchase");
+    toast.success(`Successfully added ${checkoutArray.length} items.`);
+    setModal({ ...modal, show: false });
+  };
+
+  // sets modal for shopping for items
+  const handleShop = () => {
+    checkoutModal.length > 0
       ? setModal({
-          ...modal,
           show: true,
-          message: { title: "Add items to cart?", body: { ul: body } },
-          action: () => handleShop(true),
+          message: { title: "Add items to cart?", body: { ul: checkoutModal } },
+          action: () => handleAdd(),
         })
       : toast.error("All items already in cart/at home!");
   };
 
   // dummy function
   const handleCook = () => {
-    alert("Bookum");
+    // loop through ingredients, convert to homeUnits, downsert amount
+    const cookRecipe = () => {
+      if (!userData || !ingredients) return;
+      let downsertItems: downsert[] = [];
+      let complete = true;
+      ingredients.map(async (g) => {
+        let homeItem = userData.items.find(
+          (item) => item.product == g.product_id
+        );
+        if (homeItem === undefined) {
+          complete = false;
+          return;
+        }
+        let x_home = conversionMachine({
+          source: g.unit_short,
+          target: homeItem.unit,
+          amount: g.amount,
+        });
+        downsertItems.push({ product: g.product_id, amount: x_home });
+      });
+      if (complete) {
+        Promise.all(
+          downsertItems.map(async (item) => {
+            await downsertItem(item);
+          })
+        );
+        setModal(emptyModal);
+        refreshContext();
+        toast.success("Cooked recipe! Ingredients consumed.");
+      } else {
+        setModal(emptyModal);
+        toast.error("You don't have all necessary ingredients at Home!");
+      }
+    };
+    setModal({
+      show: true,
+      message: {
+        title: "Cook this recipe?",
+        body: {
+          pre: "All ingredients associated with ",
+          span: recipe.title,
+          post: " will be consumed.",
+        },
+      },
+      action: cookRecipe,
+    });
   };
 
   // sets modal to save a recipe

@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { Unit } from "convert-units";
+import React, { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
+import { useAuth } from "../context/AuthContext";
 import { cart_item, item, item_generic } from "../utilities/interfaces";
 
 type StoreModalProps = {
@@ -11,7 +13,11 @@ type StoreModalProps = {
   handleManageBasket: (action: string) => void;
   handleAmount: (action: string) => void;
   amount: number;
+  unit: Unit;
+  setUnit: (arg0: Unit) => void;
 };
+type initial = { amount: number; unit: Unit };
+
 const StoreModal = ({
   show,
   handleClose,
@@ -19,12 +25,14 @@ const StoreModal = ({
   handleManageBasket,
   atHome,
   handleAmount,
+  unit,
+  setUnit,
   amount,
 }: StoreModalProps) => {
-  const [initial, setInitial] = useState<number>(amount);
-  // useEffect(() => {
-  //   console.log(amount, initial);
-  // }, [amount]);
+  const { units } = useAuth();
+  if (selectedItem === undefined || units === undefined) return null;
+  const initAmount = useMemo(() => amount, []);
+  const initUnit = useMemo(() => unit, []);
 
   return (
     <>
@@ -34,7 +42,7 @@ const StoreModal = ({
           className="bg-black bright-active"
           style={{ borderBottom: "none" }}
         >
-          <Modal.Title>{selectedItem?.name + ", " + initial}</Modal.Title>
+          <Modal.Title>{selectedItem?.name}</Modal.Title>
         </Modal.Header>
         <Modal.Body className=" modal-active d-flex flex-column">
           {" "}
@@ -58,6 +66,24 @@ const StoreModal = ({
             </button>{" "}
           </div>
           <span className="atHomeText">At home: {atHome}</span>
+          <div className="d-flex flex-wrap gap-1 mt-2">
+            {units &&
+              units.map((u) => {
+                let selected = u.short === unit;
+                return (
+                  <div
+                    className={`bg-black ${
+                      selected ? "bright-blue" : "bright"
+                    } p-1 rounded d-flex align-items-center justify-content-center`}
+                    style={{ width: "4rem" }}
+                    key={u.id}
+                    onClick={() => setUnit(u.short)}
+                  >
+                    {u.short}
+                  </div>
+                );
+              })}
+          </div>
         </Modal.Body>
         <Modal.Footer
           className="bg-black bright-active"
@@ -68,7 +94,7 @@ const StoreModal = ({
           </Button>
           <Button
             variant="primary"
-            disabled={amount === initial ? true : false}
+            disabled={amount === initAmount && unit === initUnit ? true : false}
             onClick={() => handleManageBasket("update")}
           >
             Adjust

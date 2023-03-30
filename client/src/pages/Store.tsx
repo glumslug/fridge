@@ -22,6 +22,7 @@ import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import ProductSearch from "../components/ProductSearch";
 import conversionMachine from "../utilities/conversionMachine";
+import { Unit } from "convert-units";
 
 const Store = () => {
   const {
@@ -50,6 +51,7 @@ const Store = () => {
   const bins = ["freezer", "fridge", "pantry", "closet"];
   const homeList = userData?.items;
   const [amount, setAmount] = useState<number>(1);
+  const [unit, setUnit] = useState<Unit>("fl-oz");
   const [selectedItem, setSelectedItem] = useState<cart_item>();
   const [show, setShow] = useState(false);
   const [atHome, setAtHome] = useState<number>(0);
@@ -68,6 +70,7 @@ const Store = () => {
       setAmount(amount + 1);
     }
   };
+
   const handleShow = (cart_item: cart_item) => {
     setSelectedItem(cart_item);
     setAtHome(
@@ -76,15 +79,13 @@ const Store = () => {
       )?.quantity || 0
     );
     setAmount(cart_item.quantity);
+    setUnit(cart_item.unit);
     setShow(true);
   };
 
   // Cart functions
   const handleManageBasket = async (action: string) => {
-    if (!selectedItem) {
-      toast.error("Please select an item first!");
-      return;
-    }
+    if (!selectedItem) return;
     if (isChecked.includes(selectedItem.product)) {
       const result = await manageBasket({
         product: selectedItem.product,
@@ -97,7 +98,7 @@ const Store = () => {
       product: selectedItem.product,
       amount: amount,
       action: action,
-      unit: selectedItem.unit,
+      unit: unit,
     });
 
     handleClose();
@@ -186,6 +187,8 @@ const Store = () => {
         handleClose={handleClose}
         selectedItem={selectedItem}
         handleManageBasket={handleManageBasket}
+        unit={unit}
+        setUnit={setUnit}
         atHome={atHome}
         handleAmount={handleAmount}
         amount={amount}

@@ -158,12 +158,12 @@ app.post("/db/cart/add", protect, (req, res) => {
   });
 });
 
-//Update cart_item STILL USING???
+//Update cart_item amount or unit
 app.post("/db/cart/update", protect, (req, res) => {
-  const { product, quantity } = req.body;
+  const { product, quantity, unit } = req.body;
   const sqlUpdate =
-    "UPDATE cart SET quantity = ? WHERE owner = ? AND product = ?;";
-  db.query(sqlUpdate, [quantity, req.user, product], (err, result) => {
+    "UPDATE cart SET quantity = ?, unit = (SELECT units.id FROM units WHERE units.short = ?) WHERE owner = ? AND product = ?;";
+  db.query(sqlUpdate, [quantity, unit, req.user, product], (err, result) => {
     if (err) {
       res.send(err);
     } else {

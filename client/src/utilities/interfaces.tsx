@@ -100,7 +100,7 @@ export interface cuisines {
 
 export interface units {
   id: number;
-  short: string | null;
+  short: Unit;
   singular: string;
   plural: string;
 }

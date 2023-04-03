@@ -295,18 +295,8 @@ app.post("/db/register", async (req, res) => {
               id: user.id,
               name: user.name,
               token: generateToken(user.id),
-              items: {
-                freezer: [],
-                fridge: [],
-                pantry: [],
-                closet: [],
-              },
-              cart: {
-                freezer: [],
-                fridge: [],
-                pantry: [],
-                closet: [],
-              },
+              items: [],
+              cart: [],
               myRecipes: [],
               savedRecipes: [],
             });

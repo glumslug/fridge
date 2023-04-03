@@ -11,10 +11,22 @@ import { toast } from "react-toastify";
 const Home = () => {
   const { userData, downsertItem, refreshContext } = useAuth();
   const binData = {
-    freezer: userData?.items.filter((item) => item.bin == "freezer"),
-    fridge: userData?.items.filter((item) => item.bin == "fridge"),
-    pantry: userData?.items.filter((item) => item.bin == "pantry"),
-    closet: userData?.items.filter((item) => item.bin == "closet"),
+    freezer:
+      userData?.items.length === 0
+        ? []
+        : userData?.items.filter((item) => item.bin == "freezer"),
+    fridge:
+      userData?.items.length === 0
+        ? []
+        : userData?.items.filter((item) => item.bin == "fridge"),
+    pantry:
+      userData?.items.length === 0
+        ? []
+        : userData?.items.filter((item) => item.bin == "pantry"),
+    closet:
+      userData?.items.length === 0
+        ? []
+        : userData?.items.filter((item) => item.bin == "closet"),
   };
   const [amount, setAmount] = useState<number>(1);
   const [selectedItem, setSelectedItem] = useState<item>();

@@ -190,6 +190,85 @@
   }
 }
 
+// landing page images
+.slide-down {
+  height: 40vh;
+  overflow: hidden;
+  margin-top: 2rem;
+  position: absolute;
+
+  .slide-card {
+    animation: 9s linear infinite slideDown;
+    transition: 0.4s;
+    img {
+      height: 40vh;
+      max-width: 100%;
+    }
+  }
+}
+
+.slideText {
+  overflow: hidden;
+  height: 2.6rem;
+  width: 100vw;
+
+  h4 {
+    font-size: 1.2rem;
+    color: rgb(111, 180, 237);
+    animation: slideText 9s infinite;
+    width: 100%;
+    padding: 5px 0;
+  }
+}
+
+@keyframes slideText {
+  0%,
+  1% {
+    opacity: 0;
+  }
+  2%,
+  30% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  31%,
+  35% {
+    opacity: 0;
+  }
+  36%,
+  63% {
+    transform: translateY(-2.6rem);
+    opacity: 1;
+  }
+  64%,
+  68% {
+    opacity: 0;
+  }
+  69%,
+  96% {
+    transform: translateY(-5.2rem);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes slideDown {
+  0%,
+  30% {
+    transform: translateY(0);
+  }
+  36%,
+  63% {
+    transform: translateY(-40vh);
+  }
+  69%,
+  94% {
+    transform: translateY(-80vh);
+  }
+}
+
 .modal-active {
   border-left: #df5296 1.5px solid;
   border-right: #df5296 1.5px solid;
@@ -234,6 +313,18 @@
   margin-right: 15px;
   // width: 4rem;
   // background-color: red;
+}
+.footer {
+  // background-color: red;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  flex-grow: 2;
+  width: 100vw;
+  color: grey;
+  font-size: 12px;
+  text-align: center;
+  align-self: end;
 }
 
 @import "bootstrap/dist/css/bootstrap.min.css";

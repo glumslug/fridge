@@ -11,6 +11,8 @@ import ProtectedRoutes from "./utilities/ProtectedRoutes";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LandingPage from "./pages/LandingPage";
+import Footer from "./components/Footer";
 const { UserProtected, NoUser } = ProtectedRoutes;
 
 function App() {
@@ -22,11 +24,12 @@ function App() {
       <Container className="mb-4">
         <Routes>
           <Route element={<NoUser />}>
+            <Route path="/" element={<LandingPage />}></Route>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
           </Route>
           <Route element={<UserProtected />}>
-            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
             <Route path="/store" element={<Store />} />
             <Route path="/recipes" element={<Recipes />} />
           </Route>
@@ -34,6 +37,7 @@ function App() {
 
         <ToastContainer />
       </Container>
+      {/* <Footer /> */}
     </AuthProvider>
   );
 }

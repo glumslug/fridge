@@ -54,6 +54,7 @@ const Store = () => {
   const [unit, setUnit] = useState<Unit>("fl-oz");
   const [selectedItem, setSelectedItem] = useState<cart_item>();
   const [show, setShow] = useState(false);
+  const [edit, setEdit] = useState(false);
   const [atHome, setAtHome] = useState<number>(0);
 
   //Modal functions
@@ -91,7 +92,7 @@ const Store = () => {
         product: selectedItem.product,
         amount: amount,
         action: action,
-        unit: selectedItem.unit,
+        unit: unit,
       });
     }
     manageCart({
@@ -193,7 +194,28 @@ const Store = () => {
         handleAmount={handleAmount}
         amount={amount}
       />
-      <h1 className="text-white mt-5">Shopping List</h1>
+
+      <div
+        className="d-flex align-items-end justify-content-between"
+        style={{ gap: "4px", maxWidth: "40rem" }}
+      >
+        <h1 className="text-white mt-5">Shopping List</h1>
+        {edit ? (
+          <div
+            className="rounded px-2 my-2 mx-1 text-white bright-submit"
+            onClick={() => setEdit(false)}
+          >
+            Done
+          </div>
+        ) : (
+          <div
+            className="rounded px-2 my-2 mx-1 text-white bright-orange"
+            onClick={() => setEdit(true)}
+          >
+            Edit
+          </div>
+        )}
+      </div>
       <div
         style={{ gap: "4px", maxWidth: "40rem" }}
         className="d-flex flex-wrap justify-content-between"
@@ -202,7 +224,6 @@ const Store = () => {
           id="stockBox"
           style={{
             minHeight: "7rem",
-            // maxHeight: "20rem",
             overflowY: "scroll",
             border: "2px solid #3960E8",
             maxWidth: "40rem",
@@ -240,34 +261,46 @@ const Store = () => {
                             }}
                             key={`${bin}${i}`}
                           >
-                            <input
-                              type="checkbox"
-                              checked={isChecked.includes(item.product)}
-                              onChange={(e) =>
-                                handleCheck(item, e.target.checked)
-                              }
-                              style={{ marginRight: "5px", marginLeft: "10px" }}
-                            />
-                            <Card
-                              style={{
-                                background: "black",
-                                gap: "5px",
-                                padding: "3px 2px 3px 8px",
-                              }}
-                              className="w-100 item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center flex-nowrap "
-                              onClick={() => handleShow(item)}
-                            >
-                              <div className="text-truncate">{item.name}</div>
-                              <div
+                            {!edit && (
+                              <input
+                                type="checkbox"
+                                id={`${bin}${i}`}
+                                checked={isChecked.includes(item.product)}
+                                onChange={(e) =>
+                                  handleCheck(item, e.target.checked)
+                                }
                                 style={{
-                                  background: "#AB6969",
+                                  marginRight: "5px",
+                                  marginLeft: "10px",
                                 }}
-                                className="d-flex text-center rounded px-1 gap-1"
+                              />
+                            )}
+                            <label htmlFor={`${bin}${i}`}>
+                              <Card
+                                style={{
+                                  background: "black",
+                                  gap: "5px",
+                                  padding: "3px 2px 3px 8px",
+                                }}
+                                className="w-100 item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center flex-nowrap "
+                                onClick={
+                                  edit ? () => handleShow(item) : () => null
+                                }
                               >
-                                <span>{item.quantity}</span>
-                                <span className="text-nowrap">{item.unit}</span>
-                              </div>
-                            </Card>
+                                <div className="text-truncate">{item.name}</div>
+                                <div
+                                  style={{
+                                    background: "#AB6969",
+                                  }}
+                                  className="d-flex text-center rounded px-1 gap-1"
+                                >
+                                  <span>{item.quantity}</span>
+                                  <span className="text-nowrap">
+                                    {item.unit}
+                                  </span>
+                                </div>
+                              </Card>
+                            </label>
                           </Col>
                         );
                       })}

@@ -4,6 +4,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { useAuth } from "../context/AuthContext";
 import { cart_item, item, item_generic } from "../utilities/interfaces";
+import { toast } from "react-toastify";
 
 type StoreModalProps = {
   show: boolean;
@@ -33,6 +34,14 @@ const StoreModal = ({
   if (selectedItem === undefined || units === undefined) return null;
   const initAmount = useMemo(() => amount, []);
   const initUnit = useMemo(() => unit, []);
+  const handleUpdate = () => {
+    if (amount === 0) {
+      toast.error("Amount must be above zero!");
+      return;
+    } else {
+      handleManageBasket("update");
+    }
+  };
 
   return (
     <>
@@ -95,7 +104,7 @@ const StoreModal = ({
           <Button
             variant="primary"
             disabled={amount === initAmount && unit === initUnit ? true : false}
-            onClick={() => handleManageBasket("update")}
+            onClick={handleUpdate}
           >
             Adjust
           </Button>

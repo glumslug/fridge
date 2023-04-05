@@ -248,33 +248,17 @@ const Store = () => {
                       </div>
                     )}
                     {/* Bin items */}
-                    <Row className="g-0 row w-100 justify-content-start justify-content-xs-center">
+                    <div className="g-0 masonry-with-columns">
                       {binCart[i].map((item: cart_item, i: number) => {
                         return (
-                          <Col
-                            xs={"6"}
-                            md={"4"}
-                            className="py-1 d-flex align-items-center"
+                          <div
+                            className="py-1 d-flex align-items-center masonry-div"
                             style={{
                               gap: "3px",
                               marginBottom: "5px",
                             }}
                             key={`${bin}${i}`}
                           >
-                            {!edit && (
-                              <input
-                                type="checkbox"
-                                id={`${bin}${i}`}
-                                checked={isChecked.includes(item.product)}
-                                onChange={(e) =>
-                                  handleCheck(item, e.target.checked)
-                                }
-                                style={{
-                                  marginRight: "5px",
-                                  marginLeft: "10px",
-                                }}
-                              />
-                            )}
                             <label htmlFor={`${bin}${i}`}>
                               <Card
                                 style={{
@@ -287,13 +271,32 @@ const Store = () => {
                                   edit ? () => handleShow(item) : () => null
                                 }
                               >
-                                <div className="text-truncate">{item.name}</div>
-                                <div
-                                  style={{
-                                    background: "#AB6969",
-                                  }}
-                                  className="d-flex text-center rounded px-1 gap-1"
-                                >
+                                {!edit ? (
+                                  <input
+                                    type="checkbox"
+                                    id={`${bin}${i}`}
+                                    checked={isChecked.includes(item.product)}
+                                    onChange={(e) =>
+                                      handleCheck(item, e.target.checked)
+                                    }
+                                  />
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    fill="#58a0a2"
+                                    className="bi bi-sliders2"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path
+                                      fill-rule="evenodd"
+                                      d="M10.5 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4H1.5a.5.5 0 0 1 0-1H10V1.5a.5.5 0 0 1 .5-.5ZM12 3.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm-6.5 2A.5.5 0 0 1 6 6v1.5h8.5a.5.5 0 0 1 0 1H6V10a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5ZM1 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 1 8Zm9.5 2a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V13H1.5a.5.5 0 0 1 0-1H10v-1.5a.5.5 0 0 1 .5-.5Zm1.5 2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Z"
+                                    />
+                                  </svg>
+                                )}
+                                <div className="text-nowrap">{item.name}</div>
+                                <div className="bkg-maroon d-flex text-center rounded px-1 gap-1">
                                   <span>{item.quantity}</span>
                                   <span className="text-nowrap">
                                     {item.unit}
@@ -301,10 +304,10 @@ const Store = () => {
                                 </div>
                               </Card>
                             </label>
-                          </Col>
+                          </div>
                         );
                       })}
-                    </Row>
+                    </div>
                   </div>
                 );
               })

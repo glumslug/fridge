@@ -103,6 +103,24 @@
   }
 }
 
+.masonry-with-columns {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  gap: 5px;
+
+  .masonry-div {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 0 auto;
+    -ms-flex: 1 0 auto;
+    flex: 0 0 auto;
+  }
+}
+
 .item-bright {
   cursor: pointer;
   border: #6ba2d5 1.5px solid;
@@ -136,6 +154,14 @@
   &:hover {
     color: #8bf0d0;
   }
+}
+
+.bkg-maroon {
+  background-color: #ab6969;
+}
+
+.bkg-teal {
+  background-color: #58a0a2;
 }
 
 .cuisine-btn {

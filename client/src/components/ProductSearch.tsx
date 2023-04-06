@@ -66,7 +66,10 @@ const ProductSearch = ({ handleAdd }: searchProps) => {
           handleClose={() => setProductModal(false)}
         />
       )}
-      <InputGroup className="p-0" style={{ flexShrink: "1" }}>
+      <InputGroup
+        className="p-0"
+        style={{ maxHeight: "2.5rem", minHeight: "2.2rem", flexShrink: "1" }}
+      >
         <Form.Control
           aria-label="Default"
           aria-describedby="inputGroup-sizing-default"
@@ -77,22 +80,59 @@ const ProductSearch = ({ handleAdd }: searchProps) => {
           style={{ border: "2px solid #5b5b5b" }}
           value={searchValue}
         />
-        <Container
-          className="d-flex flex-column position-absolute"
-          style={{
-            gap: "10px",
-            transform: "translateY(3rem)",
-            width: "100%",
-          }}
-        >
-          {searchResults.map((result, i) => {
-            return (
+        {searchResults.length > 0 && (
+          <Container
+            className="rounded d-flex flex-column position-absolute pb-1 "
+            style={{
+              gap: "10px",
+              transform: "translateY(3rem)",
+              width: "101%",
+              zIndex: "100",
+              background: "#1b1a1a",
+
+              borderRadius: "0 0 5px 5px",
+            }}
+          >
+            {searchResults.map((result, i) => {
+              return (
+                <div
+                  className="d-flex align-items-center"
+                  style={{
+                    gap: "10px",
+                  }}
+                  key={i}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="30"
+                    height="15"
+                    fill="currentColor"
+                    className="bi bi-plus-circle"
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                  </svg>
+                  <Card
+                    style={{
+                      width: "40rem",
+                      background: "black",
+                      gap: "10px",
+                    }}
+                    onClick={() => handleSelect(result)}
+                    className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center ps-2"
+                  >
+                    {result.name}
+                  </Card>
+                </div>
+              );
+            })}
+            {searchValue && (
               <div
-                className="d-flex align-items-center"
+                className="d-flex align-items-center justify-content-end"
                 style={{
                   gap: "10px",
                 }}
-                key={i}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -107,52 +147,20 @@ const ProductSearch = ({ handleAdd }: searchProps) => {
                 </svg>
                 <Card
                   style={{
-                    width: "40rem",
+                    width: "auto",
                     background: "black",
                     gap: "10px",
                     padding: "3px 8px",
                   }}
-                  onClick={() => handleSelect(result)}
+                  onClick={() => setProductModal(true)}
                   className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
                 >
-                  {result.name}
+                  Add New
                 </Card>
               </div>
-            );
-          })}
-          {searchValue && (
-            <div
-              className="d-flex align-items-center justify-content-end"
-              style={{
-                gap: "10px",
-              }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                fill="currentColor"
-                className="bi bi-plus-circle"
-                viewBox="0 0 16 16"
-              >
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-              </svg>
-              <Card
-                style={{
-                  width: "auto",
-                  background: "black",
-                  gap: "10px",
-                  padding: "3px 8px",
-                }}
-                onClick={() => setProductModal(true)}
-                className="item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
-              >
-                Add New
-              </Card>
-            </div>
-          )}
-        </Container>
+            )}
+          </Container>
+        )}
       </InputGroup>
     </>
   );

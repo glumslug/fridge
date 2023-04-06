@@ -196,10 +196,10 @@ const Store = () => {
       />
 
       <div
-        className="d-flex align-items-end justify-content-between"
+        className="d-flex align-items-end justify-content-between mt-5"
         style={{ gap: "4px", maxWidth: "40rem" }}
       >
-        <h1 className="text-white mt-5">Shopping List</h1>
+        <h1 className="text-white">Shopping List</h1>
         {edit ? (
           <div
             className="rounded px-2 my-2 mx-1 text-white bright-submit"
@@ -285,8 +285,7 @@ const Store = () => {
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="16"
                                     height="16"
-                                    fill="#58a0a2"
-                                    className="bi bi-sliders2"
+                                    className="bi bi-sliders2 fill-sliders"
                                     viewBox="0 0 16 16"
                                   >
                                     <path

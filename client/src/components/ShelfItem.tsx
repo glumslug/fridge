@@ -1,12 +1,32 @@
 import React from "react";
 import { Card } from "react-bootstrap";
 import { item } from "../utilities/interfaces";
+import convert from "convert-units";
 type itemProps = {
   item: item;
   handleShow: (arg0: item) => void;
 };
 
 const ShelfItem = ({ item, handleShow }: itemProps) => {
+  let bestQuant = convert(item.quantity)
+    .from(item.unit)
+    .toBest({
+      exclude: [
+        "mm3",
+        "cm3",
+        "ml",
+        "l",
+        "kl",
+        "m3",
+        "km3",
+        "in3",
+        "pnt",
+        "qt",
+        "gal",
+        "ft3",
+        "yd3",
+      ],
+    });
   return (
     <Card
       style={{
@@ -24,8 +44,8 @@ const ShelfItem = ({ item, handleShow }: itemProps) => {
         style={{ background: "#AB6969" }}
         className="d-flex text-center rounded px-1 gap-1"
       >
-        <span>{item.quantity}</span>
-        <span className="text-nowrap">{item.unit}</span>
+        <span>{bestQuant.val}</span>
+        <span className="text-nowrap">{bestQuant.unit}</span>
       </div>
     </Card>
   );

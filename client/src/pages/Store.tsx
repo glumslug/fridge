@@ -24,6 +24,12 @@ import ProductSearch from "../components/ProductSearch";
 import conversionMachine from "../utilities/conversionMachine";
 import { Unit } from "convert-units";
 
+export interface handleManageBasketProps {
+  action: string;
+  amount: number;
+  unit: Unit;
+}
+
 const Store = () => {
   const {
     upsertItem,
@@ -50,42 +56,34 @@ const Store = () => {
   ];
   const bins = ["freezer", "fridge", "pantry", "closet"];
   const homeList = userData?.items;
-  const [amount, setAmount] = useState<number>(1);
-  const [unit, setUnit] = useState<Unit>("fl-oz");
   const [selectedItem, setSelectedItem] = useState<cart_item>();
   const [show, setShow] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [atHome, setAtHome] = useState<number>(0);
+  const [atHome, setAtHome] = useState<{ amount: number; unit: Unit | null }>({
+    amount: 0,
+    unit: null,
+  });
 
   //Modal functions
   const handleClose = () => {
-    setAmount(1);
     setShow(false);
-  };
-  const handleAmount = (action: string) => {
-    if (action === "less") {
-      if (amount != 0) {
-        setAmount(amount - 1);
-      }
-    } else {
-      setAmount(amount + 1);
-    }
   };
 
   const handleShow = (cart_item: cart_item) => {
     setSelectedItem(cart_item);
-    setAtHome(
-      homeList?.find(
-        (home_item: item_generic) => home_item.product == cart_item.product
-      )?.quantity || 0
+    let ahi = homeList?.find(
+      (home_item: item_generic) => home_item.product == cart_item.product
     );
-    setAmount(cart_item.quantity);
-    setUnit(cart_item.unit);
+    setAtHome({ amount: ahi?.quantity || 0, unit: ahi?.unit || null });
     setShow(true);
   };
 
   // Cart functions
-  const handleManageBasket = async (action: string) => {
+  const handleManageBasket = async ({
+    action,
+    amount,
+    unit,
+  }: handleManageBasketProps) => {
     if (!selectedItem) return;
     if (isChecked.includes(selectedItem.product)) {
       const result = await manageBasket({
@@ -147,8 +145,7 @@ const Store = () => {
         );
         let newUnit;
         let newAmount;
-        console.log(homeItem);
-        if (homeItem === undefined) {
+        if (homeItem === undefined || item.unit === homeItem.unit) {
           newAmount = item.amount;
           newUnit = item.unit;
         } else {
@@ -169,7 +166,7 @@ const Store = () => {
       })
     );
     refreshContext("purchase");
-    toast.success(`Successfully added ${total} items.`);
+    toast.success(`Successfully added ${total} item${total > 1 ? "s" : ""}.`);
   };
 
   // Preserve checks on refresh
@@ -183,17 +180,15 @@ const Store = () => {
 
   return (
     <div>
-      <StoreModal
-        show={show}
-        handleClose={handleClose}
-        selectedItem={selectedItem}
-        handleManageBasket={handleManageBasket}
-        unit={unit}
-        setUnit={setUnit}
-        atHome={atHome}
-        handleAmount={handleAmount}
-        amount={amount}
-      />
+      {show && (
+        <StoreModal
+          show={show}
+          handleClose={handleClose}
+          selectedItem={selectedItem}
+          handleManageBasket={handleManageBasket}
+          atHome={atHome}
+        />
+      )}
 
       <div
         className="d-flex align-items-end justify-content-between mt-5"
@@ -279,6 +274,7 @@ const Store = () => {
                                     onChange={(e) =>
                                       handleCheck(item, e.target.checked)
                                     }
+                                    style={{ accentColor: "#df5296" }}
                                   />
                                 ) : (
                                   <svg
@@ -289,12 +285,18 @@ const Store = () => {
                                     viewBox="0 0 16 16"
                                   >
                                     <path
-                                      fill-rule="evenodd"
+                                      fillRule="evenodd"
                                       d="M10.5 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4H1.5a.5.5 0 0 1 0-1H10V1.5a.5.5 0 0 1 .5-.5ZM12 3.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm-6.5 2A.5.5 0 0 1 6 6v1.5h8.5a.5.5 0 0 1 0 1H6V10a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5ZM1 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 1 8Zm9.5 2a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V13H1.5a.5.5 0 0 1 0-1H10v-1.5a.5.5 0 0 1 .5-.5Zm1.5 2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Z"
                                     />
                                   </svg>
                                 )}
-                                <div className="text-nowrap">{item.name}</div>
+                                <div
+                                  className={`text-nowrap ${
+                                    edit ? "" : "cart-check"
+                                  }`}
+                                >
+                                  {item.name}
+                                </div>
                                 <div className="bkg-maroon d-flex text-center rounded px-1 gap-1">
                                   <span>{item.quantity}</span>
                                   <span className="text-nowrap">

@@ -13,6 +13,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LandingPage from "./pages/LandingPage";
 import Footer from "./components/Footer";
+import NoPage from "./pages/NoPage";
 const { UserProtected, NoUser } = ProtectedRoutes;
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
             <Route path="/store" element={<Store />} />
             <Route path="/recipes" element={<Recipes />} />
           </Route>
+          <Route path="*" element={<NoPage />} />
         </Routes>
 
         <ToastContainer />

@@ -4,9 +4,8 @@ import { Container } from "react-bootstrap";
 const Footer = () => {
   return (
     <Container
-      className="d-flex justify-content-center justify-content-md-start"
+      className="d-flex justify-content-center justify-content-lg-start"
       style={{
-        maxWidth: "40rem",
         color: "grey",
         fontSize: "12px",
       }}

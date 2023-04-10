@@ -225,6 +225,13 @@ input[type="checkbox"] {
   color: #8bf0e9;
 }
 
+.bright-text {
+  color: #6ba2d5;
+  &:hover {
+    color: #df5296;
+  }
+}
+
 .bright-active {
   border: #df5296 1.5px solid;
 }
@@ -234,7 +241,11 @@ input[type="checkbox"] {
 }
 
 .spanTitle {
-  color: #5787ec;
+  color: #81a3ec;
+}
+
+.pink-fill {
+  fill: #df5296;
 }
 
 .bright-fill {
@@ -274,33 +285,51 @@ input[type="checkbox"] {
   }
 }
 
-// landing page images
+// landing page slider
 .slide-down {
-  height: 55vh;
+  height: 24rem;
   max-width: 40rem;
   overflow: hidden;
   margin-top: 2rem;
-  // position: absolute;
   display: flex;
   justify-content: center;
   padding: 0;
   margin: 0;
 
   .slide-card {
-    animation: 9s linear infinite slideDown;
+    animation: 9s ease-in-out infinite slideSide;
     transition: 0.4s;
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+  }
+  .subCard {
+    min-width: 90vw;
+    // background-color: red;
   }
 }
 
+// .slideText {
+//   overflow: hidden;
+//   height: 2.6rem;
+//   // background-color: red;
+//   h4 {
+//     font-size: 1.2rem;
+//     color: rgb(111, 180, 237);
+//     animation: slideSideText 9s linear infinite;
+//     min-width: 22rem;
+//     padding: 5px 0;
+//     // transition: 0.4s;
+//     // white-space: nowrap;
+//   }
+// }
 .slideText {
   overflow: hidden;
   height: 2.6rem;
-  width: 100vw;
-  margin-top: 1.5rem;
 
   h4 {
     font-size: 1.2rem;
-    color: rgb(111, 180, 237);
+    color: rgb(58, 166, 254);
     animation: slideText 9s infinite;
     width: 100%;
     padding: 5px 0;
@@ -310,7 +339,7 @@ input[type="checkbox"] {
 @keyframes slideText {
   0%,
   1% {
-    opacity: 0;
+    opacity: 1;
   }
   2%,
   30% {
@@ -319,7 +348,7 @@ input[type="checkbox"] {
   }
   31%,
   35% {
-    opacity: 0;
+    opacity: 1;
   }
   36%,
   63% {
@@ -328,11 +357,44 @@ input[type="checkbox"] {
   }
   64%,
   68% {
-    opacity: 0;
+    opacity: 1;
   }
   69%,
   96% {
     transform: translateY(-5.2rem);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes slideSideText {
+  0%,
+  1% {
+    opacity: 1;
+  }
+  2%,
+  30% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  31%,
+  35% {
+    opacity: 1;
+  }
+  36%,
+  63% {
+    transform: translateX(-22rem);
+    opacity: 1;
+  }
+  64%,
+  68% {
+    opacity: 1;
+  }
+  69%,
+  96% {
+    transform: translateX(-44rem);
     opacity: 1;
   }
   100% {
@@ -347,14 +409,103 @@ input[type="checkbox"] {
   }
   36%,
   63% {
-    transform: translateY(-55vh);
+    transform: translateY(-24rem);
   }
   69%,
   94% {
-    transform: translateY(-110vh);
+    transform: translateY(-48rem);
   }
 }
 
+@keyframes slideSide {
+  0%,
+  30% {
+    transform: translateX(0);
+  }
+  36%,
+  63% {
+    transform: translateX(-97vw);
+  }
+  69%,
+  94% {
+    transform: translateX(-195vw);
+  }
+}
+
+.subTitle {
+  font-size: 24px;
+  margin-bottom: 0;
+}
+
+.leftSide {
+  width: 100%;
+}
+
+.slideContainer {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cta {
+  width: 14rem;
+  height: 3rem;
+  background: #1b1a1a;
+}
+@media (min-width: 550px) {
+  .cta {
+    background: #1b1a1a;
+  }
+  .slideContainer {
+    width: 75%;
+  }
+  .slideText {
+    overflow: hidden;
+    height: 2.6rem;
+
+    h4 {
+      font-size: 1.2rem;
+      color: rgb(111, 180, 237);
+      animation: slideText 9s infinite;
+      width: 100%;
+      padding: 5px 0;
+    }
+  }
+}
+@media (min-width: 800px) {
+  .slideContainer {
+    width: 55%;
+  }
+}
+// column until here
+@media (min-width: 1000px) {
+  .slide-down {
+    .slide-card {
+      animation: 9s linear infinite slideDown;
+      transition: 0.4s;
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+    .subCard {
+      min-width: 40vw;
+      // background-color: red;
+    }
+  }
+  .subTitle {
+    font-size: 2.5rem;
+  }
+  .leftSide {
+    width: 50%;
+  }
+
+  .slideContainer {
+    width: 80%;
+  }
+  .cta {
+    width: 14rem;
+    height: 3rem;
+  }
+}
 .modal-active {
   border-left: #df5296 1.5px solid;
   border-right: #df5296 1.5px solid;

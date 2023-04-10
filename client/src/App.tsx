@@ -22,24 +22,37 @@ function App() {
   return (
     <AuthProvider>
       <Navbar />
-      <Container className="mb-4">
-        <Routes>
-          <Route element={<NoUser />}>
-            <Route path="/" element={<LandingPage />}></Route>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-          </Route>
-          <Route element={<UserProtected />}>
-            <Route path="/home" element={<Home />} />
-            <Route path="/store" element={<Store />} />
-            <Route path="/recipes" element={<Recipes />} />
-          </Route>
-          <Route path="*" element={<NoPage />} />
-        </Routes>
+      <div
+        className="d-flex flex-column justify-content-between position-absolute w-100"
+        style={{
+          height: "100%",
+          maxHeight: "100vh",
+          overflowX: "hidden",
+          paddingTop: "5rem",
+          paddingBottom: ".5rem",
+          top: "0",
+          left: "0",
+        }}
+      >
+        <Container className="mb-4">
+          <Routes>
+            <Route element={<NoUser />}>
+              <Route path="/" element={<LandingPage />}></Route>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
+            <Route element={<UserProtected />}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/store" element={<Store />} />
+              <Route path="/recipes" element={<Recipes />} />
+            </Route>
+            <Route path="*" element={<NoPage />} />
+          </Routes>
 
-        <ToastContainer />
-      </Container>
-      {/* <Footer /> */}
+          <ToastContainer />
+        </Container>
+        <Footer />
+      </div>
     </AuthProvider>
   );
 }

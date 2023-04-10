@@ -211,6 +211,12 @@ input[type="checkbox"] {
   all: unset;
 }
 
+.button-no {
+  border: none;
+  outline: none;
+  background: none;
+}
+
 .atHomeText {
   color: #8bbff0;
 }
@@ -225,6 +231,10 @@ input[type="checkbox"] {
 
 .spanYN {
   color: #df5296;
+}
+
+.spanTitle {
+  color: #5787ec;
 }
 
 .bright-fill {
@@ -244,6 +254,18 @@ input[type="checkbox"] {
     fill: #df5296;
   }
 }
+.add-new {
+  transition: 0.3s;
+  cursor: pointer;
+}
+.bright-inner-fill {
+  &:hover > .add-new {
+    fill: #df5296;
+  }
+  &:hover > button {
+    border-color: #df5296;
+  }
+}
 
 .bright-border-pink {
   cursor: pointer;
@@ -254,18 +276,19 @@ input[type="checkbox"] {
 
 // landing page images
 .slide-down {
-  height: 40vh;
+  height: 55vh;
+  max-width: 40rem;
   overflow: hidden;
   margin-top: 2rem;
-  position: absolute;
+  // position: absolute;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
 
   .slide-card {
     animation: 9s linear infinite slideDown;
     transition: 0.4s;
-    img {
-      height: 40vh;
-      max-width: 100%;
-    }
   }
 }
 
@@ -273,6 +296,7 @@ input[type="checkbox"] {
   overflow: hidden;
   height: 2.6rem;
   width: 100vw;
+  margin-top: 1.5rem;
 
   h4 {
     font-size: 1.2rem;
@@ -323,11 +347,11 @@ input[type="checkbox"] {
   }
   36%,
   63% {
-    transform: translateY(-40vh);
+    transform: translateY(-55vh);
   }
   69%,
   94% {
-    transform: translateY(-80vh);
+    transform: translateY(-110vh);
   }
 }
 
@@ -375,18 +399,6 @@ input[type="checkbox"] {
   margin-right: 15px;
   // width: 4rem;
   // background-color: red;
-}
-.footer {
-  // background-color: red;
-  display: flex;
-  flex-direction: column;
-  justify-content: end;
-  flex-grow: 2;
-  width: 100vw;
-  color: grey;
-  font-size: 12px;
-  text-align: center;
-  align-self: end;
 }
 
 @import "bootstrap/dist/css/bootstrap.min.css";

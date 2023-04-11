@@ -199,8 +199,8 @@ const LandingPage = () => {
       style={{ minHeight: "80vh" }}
     >
       <div className="w-100 d-flex flex-column flex-lg-row ">
-        <div className="d-flex flex-column gap-2 leftSide">
-          <h1 className="d-flex align-items-end justify-content-start align-items-center gap-3">
+        <div className="d-flex flex-column gap-2 leftSide lpShout">
+          <h1 className="d-flex align-items-center justify-content-start gap-3 siteTitle">
             <span className="spanYN" style={{ fontWeight: "bolder" }}>
               The Fridge
             </span>{" "}
@@ -224,9 +224,9 @@ const LandingPage = () => {
             Recipe book, shopping list, & home inventory system &#8212; all in
             one.
           </h2>
-          <div className="bg-black rounded d-md-flex d-none align-items-center justify-content-center p-2 pt-3 mt-2 slideContainer">
+          <div className="bg-black rounded d-flex align-items-center justify-content-center p-2 pt-3 mt-2 slideContainer">
             {" "}
-            <Container className="slideText ">
+            <Container className="slideText">
               <h4>Create Recipes</h4>
               <h4>Turn them into shopping lists</h4>
               <h4>Keep track of what you have</h4>
@@ -234,20 +234,12 @@ const LandingPage = () => {
           </div>
           <button
             onClick={() => navigate("/register")}
-            className="d-flex spanYN justify-content-center align-items-center p-2 rounded bright my-1 mb-2 cta "
-            // style={{ background: "none" }}
+            className=" d-flex justify-content-center align-items-center p-2 rounded bright my-2 mb-2 cta"
           >
-            Get Started
+            <span>Get Started</span>
           </button>
         </div>
-        <div className="bg-black rounded d-md-none d-flex align-items-center justify-content-center p-2 pt-3 mb-2 slideContainer">
-          {" "}
-          <Container className="slideText ">
-            <h4>Create Recipes</h4>
-            <h4>Turn them into shopping lists</h4>
-            <h4>Keep track of what you have</h4>
-          </Container>
-        </div>
+
         <div className="slide-down leftSide">
           <div className="slide-card w-100">
             {/* Recipe Details */}
@@ -256,7 +248,7 @@ const LandingPage = () => {
                 gap: "4px",
 
                 maxWidth: "40rem",
-                height: "23rem",
+                minHeight: "23rem",
                 maxHeight: "23rem",
               }}
               className="d-flex flex-wrap justify-content-between subCard"
@@ -412,7 +404,7 @@ const LandingPage = () => {
               style={{
                 gap: "4px",
                 maxWidth: "40rem",
-                height: "23rem",
+                minHeight: "23rem",
                 maxHeight: "23rem",
               }}
               className="d-flex flex-wrap justify-content-between subCard"
@@ -432,7 +424,7 @@ const LandingPage = () => {
               >
                 {bins.map((bin, i) => {
                   return (
-                    <div key={bin} className="px-1 w-100">
+                    <div key={bin} className=" w-100">
                       {/* Bin title */}
 
                       {binCart[i].length > 0 && (
@@ -500,7 +492,7 @@ const LandingPage = () => {
                   width: "40rem",
                   gap: "5px",
                 }}
-                className="mx-1 d-flex justify-content-between flex-nowrap"
+                className=" d-flex justify-content-between flex-nowrap"
               >
                 {/* Product search */}
                 <div className="p-0 w-100">
@@ -538,7 +530,7 @@ const LandingPage = () => {
               style={{
                 gap: "4px",
                 maxWidth: "40rem",
-                height: "23rem",
+                minHeight: "23rem",
                 maxHeight: "23rem",
               }}
               className="d-flex flex-wrap justify-content-between subCard"
@@ -554,7 +546,7 @@ const LandingPage = () => {
                   gap: "2px",
                   boxSizing: "border-box",
                 }}
-                className="shadow-lg pb-0 position-relative py-2 ps-2 w-100 rounded d-flex flex-column align-items-start "
+                className="shadow-lg pb-0 position-relative p-2 w-100 rounded d-flex flex-column align-items-start "
               >
                 <div className="p-0 w-100">
                   <div

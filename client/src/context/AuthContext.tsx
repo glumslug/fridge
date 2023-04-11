@@ -174,8 +174,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setUserData(newData);
       localStorage.setItem("user", JSON.stringify(newData));
-      console.log("refreshed");
-      console.log(action);
       if (action == "purchase") {
         localStorage.removeItem("basket");
         setBasketData(null);
@@ -187,7 +185,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // get static lists: cuisines, units
   useEffect(() => {
     const getCuisines = async () => {
-      console.log("get cuisines");
       const cuisineList = await axios.get("/db/cuisines");
       if (cuisineList.data) {
         setCuisines(cuisineList.data);
@@ -195,7 +192,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
     getCuisines();
     const getUnits = async () => {
-      console.log("get units");
       const unitList = await axios.get("/db/units");
       if (unitList.data) {
         setUnits(unitList.data);
@@ -217,7 +213,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // Access to config, request, and response
-        console.log(error.response); // this is the main part. Use the response property from the error object
         toast.error(error.response?.data);
         return error.response as AxiosResponse;
       } else {
@@ -315,7 +310,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     let index = basket.items.findIndex(
       (item: basketItem) => item.product == product
     );
-    console.log(action);
     switch (action) {
       case "add":
         basket.items.push({ product, amount, unit });
@@ -344,7 +338,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       quantity: amount,
       unit: unit,
     });
-    console.log(userData?.id, product);
     if (add.data) {
       return { message: "Successfully upserted item." };
       // refreshContext("purchase");
@@ -360,7 +353,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       quantity: amount,
       unit: unit,
     });
-    console.log(userData?.id, product);
+
     if (add.data) {
       return { message: "Successfully added cart item." };
       // refreshContext("purchase");
@@ -377,7 +370,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         // Access to config, request, and response
-        console.log(error.response); // this is the main part. Use the response property from the error object
         toast.error(error.response?.data);
         return error.response as AxiosResponse;
       } else {
@@ -389,7 +381,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Add things to your shopping list in bulk
   const manageSavedRecipes = async (id: number, action: string) => {
-    console.log(id, action);
     const add = await axios({
       url: `/db/savedRecipes/${action}`,
       method: "POST",
@@ -434,7 +425,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (add.data) {
       toast.success("Recipe created!");
       refreshContext();
-      console.log(add.data);
+
       return { data: add.data[0] };
     } else {
       return { message: "Something went wrong!" };
@@ -488,8 +479,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     ingredients,
     recipe,
   }: editRecipeProps) => {
-    console.log(action);
-    console.log(ingredients);
     if (action === "update") {
       Promise.all(
         ingredients.map(async (g) => {

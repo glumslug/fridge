@@ -17,7 +17,7 @@ const RecipeResult = ({ result, handleSelect }: RecipeResultProps) => {
       onClick={() => handleSelect(result)}
       className="text-nowrap item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center"
     >
-      {result.title}
+      <span className="text-truncate">{result.title}</span>
       <div className="d-flex " style={{ gap: "5px" }}>
         <div
           style={{ width: "auto", background: "#AB6969" }}

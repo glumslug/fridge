@@ -24,6 +24,12 @@ import ProductSearch from "../components/ProductSearch";
 import conversionMachine from "../utilities/conversionMachine";
 import { Unit } from "convert-units";
 
+export interface handleManageBasketProps {
+  action: string;
+  amount: number;
+  unit: Unit;
+}
+
 const Store = () => {
   const {
     upsertItem,
@@ -50,48 +56,41 @@ const Store = () => {
   ];
   const bins = ["freezer", "fridge", "pantry", "closet"];
   const homeList = userData?.items;
-  const [amount, setAmount] = useState<number>(1);
-  const [unit, setUnit] = useState<Unit>("fl-oz");
   const [selectedItem, setSelectedItem] = useState<cart_item>();
   const [show, setShow] = useState(false);
-  const [atHome, setAtHome] = useState<number>(0);
+  const [edit, setEdit] = useState(false);
+  const [atHome, setAtHome] = useState<{ amount: number; unit: Unit | null }>({
+    amount: 0,
+    unit: null,
+  });
 
   //Modal functions
   const handleClose = () => {
-    setAmount(1);
     setShow(false);
-  };
-  const handleAmount = (action: string) => {
-    if (action === "less") {
-      if (amount != 0) {
-        setAmount(amount - 1);
-      }
-    } else {
-      setAmount(amount + 1);
-    }
   };
 
   const handleShow = (cart_item: cart_item) => {
     setSelectedItem(cart_item);
-    setAtHome(
-      homeList?.find(
-        (home_item: item_generic) => home_item.product == cart_item.product
-      )?.quantity || 0
+    let ahi = homeList?.find(
+      (home_item: item_generic) => home_item.product == cart_item.product
     );
-    setAmount(cart_item.quantity);
-    setUnit(cart_item.unit);
+    setAtHome({ amount: ahi?.quantity || 0, unit: ahi?.unit || null });
     setShow(true);
   };
 
   // Cart functions
-  const handleManageBasket = async (action: string) => {
+  const handleManageBasket = async ({
+    action,
+    amount,
+    unit,
+  }: handleManageBasketProps) => {
     if (!selectedItem) return;
     if (isChecked.includes(selectedItem.product)) {
       const result = await manageBasket({
         product: selectedItem.product,
         amount: amount,
         action: action,
-        unit: selectedItem.unit,
+        unit: unit,
       });
     }
     manageCart({
@@ -146,8 +145,7 @@ const Store = () => {
         );
         let newUnit;
         let newAmount;
-        console.log(homeItem);
-        if (homeItem === undefined) {
+        if (homeItem === undefined || item.unit === homeItem.unit) {
           newAmount = item.amount;
           newUnit = item.unit;
         } else {
@@ -168,7 +166,7 @@ const Store = () => {
       })
     );
     refreshContext("purchase");
-    toast.success(`Successfully added ${total} items.`);
+    toast.success(`Successfully added ${total} item${total > 1 ? "s" : ""}.`);
   };
 
   // Preserve checks on refresh
@@ -182,18 +180,37 @@ const Store = () => {
 
   return (
     <div>
-      <StoreModal
-        show={show}
-        handleClose={handleClose}
-        selectedItem={selectedItem}
-        handleManageBasket={handleManageBasket}
-        unit={unit}
-        setUnit={setUnit}
-        atHome={atHome}
-        handleAmount={handleAmount}
-        amount={amount}
-      />
-      <h1 className="text-white mt-5">Shopping List</h1>
+      {show && (
+        <StoreModal
+          show={show}
+          handleClose={handleClose}
+          selectedItem={selectedItem}
+          handleManageBasket={handleManageBasket}
+          atHome={atHome}
+        />
+      )}
+
+      <div
+        className="d-flex align-items-end justify-content-between mt-5"
+        style={{ gap: "4px", maxWidth: "40rem" }}
+      >
+        <h1 className="text-white">Shopping List</h1>
+        {edit ? (
+          <div
+            className="rounded px-2 my-2 mx-1 text-white bright-submit"
+            onClick={() => setEdit(false)}
+          >
+            Done
+          </div>
+        ) : (
+          <div
+            className="rounded px-2 my-2 mx-1 text-white bright-orange"
+            onClick={() => setEdit(true)}
+          >
+            Edit
+          </div>
+        )}
+      </div>
       <div
         style={{ gap: "4px", maxWidth: "40rem" }}
         className="d-flex flex-wrap justify-content-between"
@@ -202,7 +219,6 @@ const Store = () => {
           id="stockBox"
           style={{
             minHeight: "7rem",
-            // maxHeight: "20rem",
             overflowY: "scroll",
             border: "2px solid #3960E8",
             maxWidth: "40rem",
@@ -227,51 +243,72 @@ const Store = () => {
                       </div>
                     )}
                     {/* Bin items */}
-                    <Row className="g-0 row w-100 justify-content-start justify-content-xs-center">
+                    <div className="g-0 masonry-with-columns">
                       {binCart[i].map((item: cart_item, i: number) => {
                         return (
-                          <Col
-                            xs={"6"}
-                            md={"4"}
-                            className="py-1 d-flex align-items-center"
+                          <div
+                            className="py-1 d-flex align-items-center masonry-div"
                             style={{
                               gap: "3px",
                               marginBottom: "5px",
                             }}
                             key={`${bin}${i}`}
                           >
-                            <input
-                              type="checkbox"
-                              checked={isChecked.includes(item.product)}
-                              onChange={(e) =>
-                                handleCheck(item, e.target.checked)
-                              }
-                              style={{ marginRight: "5px", marginLeft: "10px" }}
-                            />
-                            <Card
-                              style={{
-                                background: "black",
-                                gap: "5px",
-                                padding: "3px 2px 3px 8px",
-                              }}
-                              className="w-100 item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center flex-nowrap "
-                              onClick={() => handleShow(item)}
-                            >
-                              <div className="text-truncate">{item.name}</div>
-                              <div
+                            <label htmlFor={`${bin}${i}`}>
+                              <Card
                                 style={{
-                                  background: "#AB6969",
+                                  background: "black",
+                                  gap: "5px",
+                                  padding: "3px 2px 3px 8px",
                                 }}
-                                className="d-flex text-center rounded px-1 gap-1"
+                                className="w-100 item-bright shadow-lg h-33 d-flex flex-row justify-content-between align-items-center flex-nowrap "
+                                onClick={
+                                  edit ? () => handleShow(item) : () => null
+                                }
                               >
-                                <span>{item.quantity}</span>
-                                <span className="text-nowrap">{item.unit}</span>
-                              </div>
-                            </Card>
-                          </Col>
+                                {!edit ? (
+                                  <input
+                                    type="checkbox"
+                                    id={`${bin}${i}`}
+                                    checked={isChecked.includes(item.product)}
+                                    onChange={(e) =>
+                                      handleCheck(item, e.target.checked)
+                                    }
+                                    style={{ accentColor: "#df5296" }}
+                                  />
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    className="bi bi-sliders2 fill-sliders"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M10.5 1a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4H1.5a.5.5 0 0 1 0-1H10V1.5a.5.5 0 0 1 .5-.5ZM12 3.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Zm-6.5 2A.5.5 0 0 1 6 6v1.5h8.5a.5.5 0 0 1 0 1H6V10a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5ZM1 8a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2A.5.5 0 0 1 1 8Zm9.5 2a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V13H1.5a.5.5 0 0 1 0-1H10v-1.5a.5.5 0 0 1 .5-.5Zm1.5 2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5Z"
+                                    />
+                                  </svg>
+                                )}
+                                <div
+                                  className={`text-nowrap ${
+                                    edit ? "" : "cart-check"
+                                  }`}
+                                >
+                                  {item.name}
+                                </div>
+                                <div className="bkg-maroon d-flex text-center rounded px-1 gap-1">
+                                  <span>{item.quantity}</span>
+                                  <span className="text-nowrap">
+                                    {item.unit}
+                                  </span>
+                                </div>
+                              </Card>
+                            </label>
+                          </div>
                         );
                       })}
-                    </Row>
+                    </div>
                   </div>
                 );
               })

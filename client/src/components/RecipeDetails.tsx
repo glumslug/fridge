@@ -98,7 +98,6 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
         const response = await axios.get("/db/recipes/" + id);
         if (response.data) {
           if (userData) {
-            console.log(response.data);
             let statusArray: ingredientList[] = [];
             let missingArray: upsert[] = [];
             let modalArray: BodyUl[] = [];
@@ -122,7 +121,7 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
                 target: ingredient?.unit_short,
                 amount: cartItem?.quantity || 0,
               });
-              console.table({ homeItem, cartItem, x_home, x_cart });
+
               let stockStatus;
               let newAmount;
               let newUnit;
@@ -193,8 +192,8 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
                 });
                 modalArray.push({
                   name: ingredient.name,
-                  amount: ingredient.amount,
-                  unit: ingredient.unit_short,
+                  amount: newAmount,
+                  unit: newUnit,
                 });
               }
             });
@@ -203,7 +202,6 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
             setTempIngredients(statusArray);
             setCheckoutArray(missingArray);
             setCheckoutModal(modalArray);
-            console.log("Refreshed recipe details");
           }
         }
       } catch (error) {
@@ -352,7 +350,9 @@ const RecipeDetails = ({ recipe, setView, myOwn }: RecipeDetailsProps) => {
 
   // dummy function
   const modifyRecipe = () => {
-    alert("Convert this to my recipe and modify?");
+    alert(
+      "Want to convert this to my recipe and modify? Feature is unfortunately not live yet, so please sit tight!"
+    );
   };
 
   //delete a recipe

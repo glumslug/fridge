@@ -37,9 +37,11 @@ const YesNoModal = ({
           {message.body.ul && (
             <Table striped bordered variant="dark">
               <thead className="spanYN">
-                <th className="ps-2">Ingredient</th>
-                <th className="text-center">Amount</th>
-                <th className="text-center">Unit</th>
+                <tr>
+                  <th className="ps-2">Ingredient</th>
+                  <th className="text-center">Amount</th>
+                  <th className="text-center">Unit</th>
+                </tr>
               </thead>
               <tbody>
                 {message.body.ul?.map((m) => {

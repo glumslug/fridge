@@ -37,27 +37,6 @@ const AmountModal = ({
     initIntDec
   );
 
-  // const decConv = {
-  //   "0": 0,
-  //   "⅛": 0.125,
-  //   "¼": 0.25,
-  //   "⅓": 0.333,
-  //   "½": 0.5,
-  //   "⅔": 0.666,
-  //   "¾": 0.75,
-  // };
-
-  // const decConv = {
-  //   "00": 0,
-  //   "125": 0.125,
-  //   "25": 0.25,
-  //   "33": 0.333,
-  //   "50": 0.5,
-  //   "66": 0.666,
-  //   "75": 0.75,
-  // };
-
-  // want to move to this to solve type error later on
   const decConvTable = [
     { display: "00", unicode: "0", value: 0 },
     { display: "125", unicode: "⅛", value: 0.125 },

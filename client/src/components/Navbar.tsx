@@ -39,7 +39,7 @@ const Navbar = () => {
               style={{ width: "3rem", height: "3rem", position: "relative" }}
               variant="outline-primary"
               className="p-2 rounded-lg d-flex align-items-center justify-content-center"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/home")}
             >
               <svg
                 fill="currentColor"

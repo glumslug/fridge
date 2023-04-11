@@ -1,25 +1,32 @@
-import React, { useEffect, useState } from "react";
+import { Unit } from "convert-units";
+import React, { useEffect, useMemo, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { item } from "../utilities/interfaces";
 import { useAuth } from "../context/AuthContext";
+import { productSearchItem } from "../utilities/interfaces";
 import { toast } from "react-toastify";
-import { Unit } from "convert-units";
 import conversionMachine from "../utilities/conversionMachine";
 
-type FridgeModalProps = {
+type AddItemModalProps = {
   show: boolean;
-  selectedItem: item | undefined;
+  selectedItem: productSearchItem | undefined;
   handleClose: () => void;
 };
-const FridgeModal = ({ show, handleClose, selectedItem }: FridgeModalProps) => {
-  if (selectedItem === undefined) return null;
-  const { units, refreshContext, downsertItem } = useAuth();
-  const [newUnit, setNewUnit] = useState(selectedItem.unit);
-  const atHome: { amount: number; unit: Unit } = {
-    amount: selectedItem.quantity,
-    unit: selectedItem.unit,
-  };
+
+const AddItemModal = ({
+  show,
+  handleClose,
+  selectedItem,
+}: AddItemModalProps) => {
+  const { units, upsertItem, refreshContext, userData } = useAuth();
+  if (
+    selectedItem === undefined ||
+    units === undefined ||
+    userData === undefined ||
+    userData === null
+  )
+    return null;
+  const [unit, setUnit] = useState<Unit>("fl-oz");
   const [intDec, setIntDec] = useState<{ int: number; dec: string }>({
     int: 1,
     dec: "00",
@@ -60,42 +67,40 @@ const FridgeModal = ({ show, handleClose, selectedItem }: FridgeModalProps) => {
     return calc;
   };
 
-  const handleUnit = (unit: Unit) => {
-    let conv = conversionMachine({
-      amount: atHome.amount,
-      source: atHome.unit,
-      target: unit,
-    });
-    if (conv < 1) {
-      toast.error("Not enough in " + selectedItem.bin + " for a " + unit);
+  const handleAdd = async () => {
+    let homeItem = userData.items.find(
+      (hi) => hi.product === selectedItem.product
+    );
+    let newUnit;
+    let newAmount;
+    let amount = handleCalc();
+    if (amount == undefined) {
+      toast.error("Amount issue.");
       return;
+    }
+    if (homeItem === undefined) {
+      newAmount = amount;
+      newUnit = unit;
     } else {
-      setNewUnit(unit);
-      setIntDec({ int: 1, dec: "00" });
+      newAmount = conversionMachine({
+        amount: amount,
+        source: unit,
+        target: homeItem.unit,
+      });
+      newUnit = homeItem.unit;
     }
-  };
-  const handleManage = async () => {
-    let calc = handleCalc();
-    if (calc === undefined) {
-      toast.error("Amount is undefined");
-      return;
-    }
-    let atHomeComp = conversionMachine({
-      amount: calc,
-      source: newUnit,
-      target: atHome.unit,
-    });
-    const result = await downsertItem({
+
+    let res = await upsertItem({
       product: selectedItem.product,
-      amount: atHomeComp,
+      amount: newAmount,
+      unit: newUnit,
     });
-    if (result?.message) {
+    if (res?.message) {
       refreshContext();
-      toast.success(result.message);
+      toast.success("Item added!");
       handleClose();
     }
   };
-
   return (
     <>
       <Modal show={show} onHide={handleClose} centered>
@@ -104,11 +109,9 @@ const FridgeModal = ({ show, handleClose, selectedItem }: FridgeModalProps) => {
           className="bg-black bright-active"
           style={{ borderBottom: "none" }}
         >
-          <Modal.Title className="d-flex justify-content-between align-items-center w-100">
-            {selectedItem?.name}{" "}
-            <span className="atHomeText" style={{ fontSize: "1rem" }}>
-              Current: {atHome.amount + " " + (atHome.unit ? atHome.unit : "")}
-            </span>
+          <Modal.Title>
+            Add <span className="spanYN">{selectedItem?.name}</span> to{" "}
+            {selectedItem.bin}?
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className=" modal-active d-flex flex-column">
@@ -222,7 +225,7 @@ const FridgeModal = ({ show, handleClose, selectedItem }: FridgeModalProps) => {
             >
               {units &&
                 units.map((u) => {
-                  let selected = u.short === newUnit;
+                  let selected = u.short === unit;
                   return (
                     <div
                       className={`bg-black ${
@@ -230,7 +233,7 @@ const FridgeModal = ({ show, handleClose, selectedItem }: FridgeModalProps) => {
                       } p-1 rounded d-flex align-items-center justify-content-center`}
                       style={{ width: "4rem" }}
                       key={u.id}
-                      onClick={() => handleUnit(u.short)}
+                      onClick={() => setUnit(u.short)}
                     >
                       {u.short}
                     </div>
@@ -246,12 +249,8 @@ const FridgeModal = ({ show, handleClose, selectedItem }: FridgeModalProps) => {
           <Button variant="secondary" onClick={handleClose}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleManage}
-            disabled={handleCalc() == 0}
-          >
-            Use/Toss
+          <Button variant="primary" onClick={handleAdd}>
+            Add
           </Button>
         </Modal.Footer>
       </Modal>
@@ -259,4 +258,4 @@ const FridgeModal = ({ show, handleClose, selectedItem }: FridgeModalProps) => {
   );
 };
 
-export default FridgeModal;
+export default AddItemModal;

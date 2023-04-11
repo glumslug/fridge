@@ -2,9 +2,10 @@ import React from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { ingredient } from "../utilities/interfaces";
 import { ingredientList } from "./RecipeDetails";
+import { ingredientListDisp } from "../pages/LandingPage";
 
 type DisplayRowProps = {
-  ingredients: ingredientList[] | null | undefined;
+  ingredients: ingredientList[] | null | undefined | ingredientListDisp[];
   fractionize: (argo0: number) => string;
 };
 const DetailsDisplayRow = ({ ingredients, fractionize }: DisplayRowProps) => {
@@ -43,7 +44,7 @@ const DetailsDisplayRow = ({ ingredients, fractionize }: DisplayRowProps) => {
       )}
 
       {/* Ingredients */}
-      {ingredients?.map((g: ingredientList) => {
+      {ingredients?.map((g: ingredientList | ingredientListDisp) => {
         return (
           <Row className="g-0 d-flex mb-1" key={g.ingredient_id}>
             {/* Title */}

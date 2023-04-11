@@ -10,9 +10,7 @@ const UserProtected = () => {
 
 const NoUser = () => {
   const { userData } = useContext(AuthContext);
-  console.log("No User");
-
-  return userData ? <Navigate to="/" /> : <Outlet />;
+  return userData ? <Navigate to="/home" /> : <Outlet />;
 };
 
 const ProtectedRoutes = {
